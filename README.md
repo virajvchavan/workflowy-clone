@@ -14,5 +14,6 @@ Deployed here: https://blooming-taiga-58696.herokuapp.com/
     - If you have heroku cli installed, - Run `heroku local -f Procfile.dev`
 
 ### Deploying
-- `git push heroku master`
-- Logs: `heroku logs --tail`
+- Automatic deploys are enabled for this repo on the branch `main`
+- To deploy manually: `git push heroku main`
+- To view production logs: `heroku logs --tail`

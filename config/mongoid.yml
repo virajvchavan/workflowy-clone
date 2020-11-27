@@ -166,10 +166,9 @@ test:
         max_pool_size: 1
 
 production:
-    clients:
-        default:
-          uri: <%= Rails.application.credentials.mongo_url %>
-          #  &lt;%= Rails.application.credentials.mongo_url %&gt;
-        options:
-            skip_version_check: true
-        safe: true
+  clients:
+    default:
+      uri: <%= Rails.application.credentials.mongo_url %>
+    options:
+      skip_version_check: true
+    safe: true
