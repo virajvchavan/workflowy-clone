@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  useEffect(() => {
+    window.fetch('/api/notes')
+      .then(response => response.json())
+      .then(json => console.log(json))
+      .catch(error => console.log(error));
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -16,7 +23,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Learn Reacts
         </a>
       </header>
     </div>
