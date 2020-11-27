@@ -13,3 +13,6 @@ Deployed here: https://blooming-taiga-58696.herokuapp.com/
 - Run `rails s -p 3001` in one terminal and in the another terminal you can do `cd client && npm start`
     - If you have heroku cli installed, - Run `heroku local -f Procfile.dev`
 
+### Deploying
+- `git push heroku master`
+- Logs: `heroku logs --tail`
