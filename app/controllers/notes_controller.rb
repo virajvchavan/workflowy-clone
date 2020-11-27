@@ -1,4 +1,4 @@
-class NotesController < ApplicationController
+class NotesController < ApiController
   before_action :set_note, only: [:show, :update, :destroy]
 
   # GET /notes

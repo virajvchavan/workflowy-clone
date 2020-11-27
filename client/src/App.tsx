@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import './App.css';
+
+function Home() {
+  return <div>home</div>;
+}
+
+function NotFound() {
+  return <div>not found</div>;
+}
 
 function App() {
   useEffect(() => {
@@ -10,24 +18,12 @@ function App() {
       .catch(error => console.log(error));
   }, []);
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Reacts
-        </a>
-      </header>
-    </div>
-  );
+  return <Router>
+      <Switch>
+        <Route path='/' exact component={Home} />
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
 }
 
 export default App;
