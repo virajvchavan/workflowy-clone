@@ -169,6 +169,6 @@ production:
   clients:
     default:
       uri: <%= Rails.application.credentials.mongo_url %>
-    options:
-      skip_version_check: true
-    safe: true
+      options:
+        skip_version_check: true
+        safe: true
