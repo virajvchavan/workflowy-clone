@@ -1,3 +1,5 @@
+Deployed here: https://blooming-taiga-58696.herokuapp.com/
+
 ### Rails credentials
 - edit: `bin/rails credentials:edit`
 - access in code: `Rails.application.credentials.cred_name`
