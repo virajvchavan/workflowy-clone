@@ -1,29 +1,33 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import './App.css';
-
-function Home() {
-  return <div>home</div>;
-}
-
-function NotFound() {
-  return <div>not found</div>;
-}
+import Home from './components/Home';
+import Login from './components/Login';
+import NotFound from './components/NotFound/NotFound';
+import { ProvideAuth } from './hooks/use-auth';
+import { PrivateRoute } from './components/PrivateRoute';
+import Navbar from './components/Navbar/Navbar';
 
 function App() {
-  useEffect(() => {
-    window.fetch('/api/notes')
-      .then(response => response.json())
-      .then(json => console.log(json))
-      .catch(error => console.log(error));
-  }, []);
+  // useEffect(() => {
+  //   window.fetch('/api/notes')
+  //     .then(response => response.json())
+  //     .then(json => console.log(json))
+  //     .catch(error => console.log(error));
+  // }, []);
 
-  return <Router>
+  return (<ProvideAuth>
+    <Navbar />
+    <Router>
       <Switch>
-        <Route path='/' exact component={Home} />
+        <PrivateRoute path="/" exact>
+          <Home />
+        </PrivateRoute>
+        <Route path="/login" component={Login} />
         <Route component={NotFound} />
       </Switch>
     </Router>
+  </ProvideAuth>);
 }
 
 export default App;
