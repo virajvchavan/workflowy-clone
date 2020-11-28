@@ -1,8 +1,8 @@
-import { Button, Container, createStyles, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
+import { Box, Button, Container, createStyles, FormHelperText, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
 import React from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/use-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface LocationState {
   from: {
@@ -25,11 +25,16 @@ const useStyles = makeStyles((theme: Theme) =>
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const classes = useStyles();
   let history = useHistory();
   let location = useLocation<LocationState>();
   let auth = useAuth();
+
+  useEffect(() => {
+    setError("");
+  }, [email, password]);
 
   let { from } = location.state || { from: { pathname: "/" } };
   let login = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -38,6 +43,8 @@ function Login() {
       auth?.signin(email, password, (status) => {
         if (status === "success") {
           history.replace(from);
+        } else {
+          setError("Invalid credentials");
         }
       });
     }
@@ -53,12 +60,12 @@ function Login() {
         <TextField
           type="email" id="email" label="Email" variant="outlined"
           required={true} fullWidth={true} margin="dense" autoComplete="email"
-          onChange={({ target }) => setEmail(target.value)}
+          onChange={({ target }) => setEmail(target.value)} error={error ? true : false}
         />
         <TextField
           type="password" id="password" label="Password" variant="outlined"
           required={true} fullWidth={true} margin="dense" autoComplete="current-password"
-          onChange={({ target }) => setPassword(target.value)}
+          onChange={({ target }) => setPassword(target.value)} error={error ? true : false} helperText={error}
         />
         <br/>
         <Button disabled={!isFormValid} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={login}>Login</Button>
