@@ -5,7 +5,6 @@ import Home from './components/Home';
 import Login from './components/Login';
 import NotFound from './components/NotFound/NotFound';
 import { ProvideAuth } from './hooks/use-auth';
-import { PrivateRoute } from './components/PrivateRoute';
 import Navbar from './components/Navbar/Navbar';
 import { Container } from '@material-ui/core';
 import Signup from './components/Signup';
@@ -20,12 +19,12 @@ function App() {
 
   return (<ProvideAuth>
     <Container>
-      <Navbar />
       <Router>
+        <Navbar />
         <Switch>
-          <PrivateRoute path="/" exact={true}>
+          <Route path="/" exact={true}>
             <Home />
-          </PrivateRoute>
+          </Route>
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
           <Route component={NotFound} />

@@ -22,9 +22,9 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export default function Navbar() {
+  let history = useHistory();
   const classes = useStyles();
   let auth = useAuth();
-  let history = useHistory();
 
   return (
     <div className={classes.root}>
@@ -33,7 +33,9 @@ export default function Navbar() {
           <Typography variant="h6" className={classes.title}>
             Moar
           </Typography>
-          {auth?.user && <Button color="inherit" onClick={() => auth?.signout(() => history.push("/"))}>Logout</Button>}
+          {auth?.user ? <Button color="inherit" onClick={() => auth?.signout(() => history.push("/login"))}>Logout</Button> : 
+            <Button color="inherit" onClick={() => history.push("/login")}>Login</Button>
+          }
         </Toolbar>
       </AppBar>
     </div>
