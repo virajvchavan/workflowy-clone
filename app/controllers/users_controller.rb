@@ -12,6 +12,11 @@ class UsersController < ApiController
     end
   end
 
+  # client can call this to make sure the jwt token it has has not expired
+  def auto_login
+    render json: { status: "logged_in" }
+  end
+
   # POST /users
   def create
     @user = User.new(user_params)
