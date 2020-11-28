@@ -23,7 +23,7 @@ interface userContextType  {
 
 const authContext = createContext<userContextType | null>(null);
 
-export function ProvideAuth({ children }: { children: JSX.Element[] }) {
+export function ProvideAuth({ children }: { children: JSX.Element }) {
   const auth = useProvideAuth();
   return <authContext.Provider value={auth}>
       {children}

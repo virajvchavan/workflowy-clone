@@ -7,6 +7,7 @@ import NotFound from './components/NotFound/NotFound';
 import { ProvideAuth } from './hooks/use-auth';
 import { PrivateRoute } from './components/PrivateRoute';
 import Navbar from './components/Navbar/Navbar';
+import { Container } from '@material-ui/core';
 
 function App() {
   // useEffect(() => {
@@ -17,16 +18,18 @@ function App() {
   // }, []);
 
   return (<ProvideAuth>
-    <Navbar />
-    <Router>
-      <Switch>
-        <PrivateRoute path="/" exact>
-          <Home />
-        </PrivateRoute>
-        <Route path="/login" component={Login} />
-        <Route component={NotFound} />
-      </Switch>
-    </Router>
+    <Container>
+      <Navbar />
+      <Router>
+        <Switch>
+          <PrivateRoute path="/" exact>
+            <Home />
+          </PrivateRoute>
+          <Route path="/login" component={Login} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
+    </Container>
   </ProvideAuth>);
 }
 
