@@ -8,6 +8,7 @@ import { ProvideAuth } from './hooks/use-auth';
 import { PrivateRoute } from './components/PrivateRoute';
 import Navbar from './components/Navbar/Navbar';
 import { Container } from '@material-ui/core';
+import Signup from './components/Signup';
 
 function App() {
   // useEffect(() => {
@@ -26,6 +27,7 @@ function App() {
             <Home />
           </PrivateRoute>
           <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
           <Route component={NotFound} />
         </Switch>
       </Router>
