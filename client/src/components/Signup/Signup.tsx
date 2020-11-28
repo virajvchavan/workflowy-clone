@@ -43,6 +43,9 @@ function Signup() {
     }
   };
 
+  // todo: have more sophisticated form validations
+  let isFormValid = email && password && passwordConfirmation && password === passwordConfirmation;
+
   return <Container className={classes.root}>
     <form>
       <Grid container spacing={1} justify="center">
@@ -67,7 +70,7 @@ function Signup() {
             required={true} fullWidth={true} margin="dense"
             onChange={({ target }) => setPasswordConfirmation(target.value)}
           />
-          <Button className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>Signup</Button>
+          <Button disabled={!isFormValid} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>Signup</Button>
       </Grid>
     </form>
     <hr/>

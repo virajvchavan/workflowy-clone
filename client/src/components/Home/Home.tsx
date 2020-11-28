@@ -11,7 +11,6 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-
 function Home() {
   const classes = useStyles();
   return <div>

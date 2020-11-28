@@ -35,11 +35,16 @@ function Login() {
   let login = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
     if (email && password) {
-      auth?.signin(email, password, () => {
-        history.replace(from);
+      auth?.signin(email, password, (status) => {
+        if (status === "success") {
+          history.replace(from);
+        }
       });
     }
   };
+
+  // todo: have more sophisticated form validations
+  let isFormValid = email && password;
 
   return <Container className={classes.root}>
     <form>
@@ -56,7 +61,7 @@ function Login() {
           onChange={({ target }) => setPassword(target.value)}
         />
         <br/>
-        <Button className={classes.btn} type="submit" variant="outlined" color="primary" onClick={login}>Login</Button>
+        <Button disabled={!isFormValid} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={login}>Login</Button>
       </Grid>
     </form>
     <hr/>

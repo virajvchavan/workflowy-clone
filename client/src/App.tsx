@@ -23,7 +23,7 @@ function App() {
       <Navbar />
       <Router>
         <Switch>
-          <PrivateRoute path="/" exact>
+          <PrivateRoute path="/" exact={true}>
             <Home />
           </PrivateRoute>
           <Route path="/login" component={Login} />
