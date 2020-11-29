@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { useAuth } from '../../hooks/use-auth';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -18,6 +18,12 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       flexGrow: 1,
     },
+    link: {
+      textDecoration: 'none',
+      '&:hover, &:hover, &:visited, &:link, &:active': {
+        color: 'unset'
+      }
+    }
   }),
 );
 
@@ -31,7 +37,9 @@ export default function Navbar() {
       <AppBar position="static" color="transparent">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            Moar
+            <Link to="/" className={classes.link}>
+              Moar
+              </Link>
           </Typography>
           {auth?.user ? <Button color="inherit" onClick={() => auth?.signout(() => history.push("/login"))}>Logout</Button> : 
             <Button color="inherit" onClick={() => history.push("/login")}>Login</Button>

@@ -1,13 +1,18 @@
-import { Button, Container, createStyles, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
+import { Button, CircularProgress, Container, createStyles, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
 import React from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/use-auth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface LocationState {
   from: {
     pathname: string;
   };
+}
+
+interface ErrorType {
+  passsword?: string,
+  passwordConfirmation?: string
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -18,6 +23,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     btn: {
       margin: "10px 0",
+    },
+    loading: {
+      marginLeft: "10px"
     }
   }),
 );
@@ -27,6 +35,8 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [errors, setErrors] = useState<ErrorType>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const classes = useStyles();
   let history = useHistory();
@@ -35,6 +45,7 @@ function Signup() {
 
   let { from } = location.state || { from: { pathname: "/" } };
   let signup = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setIsLoading(true);
     event.preventDefault();
     if (email && password && passwordConfirmation) {
       auth?.signup(email, password, () => {
@@ -42,6 +53,17 @@ function Signup() {
       });
     }
   };
+
+  useEffect(() => {
+    let newErrors: ErrorType = {};
+    if (password && password.length < 4) {
+      newErrors.passsword = "Min length 4";
+    }
+    if (passwordConfirmation && password !== passwordConfirmation) {
+      newErrors.passwordConfirmation = "Password mismatch";
+    }
+    setErrors(newErrors);
+  }, [password, passwordConfirmation])
 
   // todo: have more sophisticated form validations
   let isFormValid = email && password && passwordConfirmation && password === passwordConfirmation;
@@ -63,14 +85,19 @@ function Signup() {
           <TextField
             type="password" id="password" label="Password" variant="outlined"
             required={true} fullWidth={true} margin="dense" autoComplete="current-password"
+            error={errors.passsword ? true : false} helperText={errors.passsword}
             onChange={({ target }) => setPassword(target.value)}
           />
           <TextField
             type="password" id="confirm-password" label="Confirm Password" variant="outlined"
             required={true} fullWidth={true} margin="dense"
+            error={errors.passwordConfirmation ? true : false} helperText={errors.passwordConfirmation}
             onChange={({ target }) => setPasswordConfirmation(target.value)}
           />
-          <Button disabled={!isFormValid} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>Signup</Button>
+          <Button disabled={!isFormValid | isLoading} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>
+            Signup
+            {isLoading && <CircularProgress size={20} className={classes.loading} />}
+          </Button>
       </Grid>
     </form>
     <hr/>

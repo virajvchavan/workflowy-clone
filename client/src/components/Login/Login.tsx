@@ -1,4 +1,4 @@
-import { Box, Button, Container, createStyles, FormHelperText, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
+import { Box, Button, CircularProgress, Container, createStyles, FormHelperText, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
 import React from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/use-auth';
@@ -18,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     btn: {
       margin: "10px 0",
+    },
+    loading: {
+      marginLeft: "10px"
     }
   }),
 );
@@ -26,6 +29,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const classes = useStyles();
   let history = useHistory();
@@ -38,6 +42,7 @@ function Login() {
 
   let { from } = location.state || { from: { pathname: "/" } };
   let login = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    setIsLoading(true);
     event.preventDefault();
     if (email && password) {
       auth?.signin(email, password, (status) => {
@@ -45,6 +50,7 @@ function Login() {
           history.replace(from);
         } else {
           setError("Invalid credentials");
+          setIsLoading(false);
         }
       });
     }
@@ -68,7 +74,10 @@ function Login() {
           onChange={({ target }) => setPassword(target.value)} error={error ? true : false} helperText={error}
         />
         <br/>
-        <Button disabled={!isFormValid} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={login}>Login</Button>
+        <Button disabled={!isFormValid || isLoading} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={login}>
+          Login
+          {isLoading && <CircularProgress size={20} className={classes.loading} />}
+        </Button>
       </Grid>
     </form>
     <hr/>
