@@ -94,7 +94,7 @@ function Signup() {
             error={errors.passwordConfirmation ? true : false} helperText={errors.passwordConfirmation}
             onChange={({ target }) => setPasswordConfirmation(target.value)}
           />
-          <Button disabled={!isFormValid | isLoading} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>
+          <Button disabled={!isFormValid || isLoading} className={classes.btn} type="submit" variant="outlined" color="primary" onClick={signup}>
             Signup
             {isLoading && <CircularProgress size={20} className={classes.loading} />}
           </Button>
