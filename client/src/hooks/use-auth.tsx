@@ -16,7 +16,7 @@ const apiAuth = {
     .then(data => {
       if (data.token) {
         localStorage.setItem('user', JSON.stringify(data));
-        cb("Viraj", data.token);
+        cb(data.name, data.token);
       } else {
         cb("", null);
       }
@@ -28,7 +28,7 @@ const apiAuth = {
   autoSignin(cb: () => boolean) {
     // make a fetch call to api to check if the token is still valid
   },
-  signup(email: string, password: string, cb: (name: string, token: string | null) => void) {
+  signup(name: string, email: string, password: string, cb: (name: string, token: string | null) => void) {
     fetch("/api/users", {
       method: "POST",
       headers: {
@@ -37,13 +37,14 @@ const apiAuth = {
       },
       body: JSON.stringify({
         email,
-        password
+        password,
+        name
       })
     }).then(resp => resp.json())
     .then(data => {
       if (data.token) {
         localStorage.setItem('user', JSON.stringify(data));
-        cb("Viraj", data.token);
+        cb(data.name, data.token);
       } else {
         cb("", null);
       }
@@ -55,6 +56,7 @@ const apiAuth = {
 };
 
 type signinType = (email: string, password: string, cb: (status: string) => void) => void
+type signupType = (name: string, email: string, password: string, cb: (status: string) => void) => void
 
 interface userContextType  {
   user: {
@@ -63,7 +65,7 @@ interface userContextType  {
   } | null;
   signin: signinType;
   signout: (cb: () => void) => void;
-  signup: signinType
+  signup: signupType
 }
 
 const authContext = createContext<userContextType | null>(null);
@@ -107,8 +109,8 @@ function useProvideAuth() {
     cb();
   };
 
-  const signup = (email: string, password: string, cb: (status: string) => void) => {
-    return apiAuth.signup(email, password, (name, token) => {
+  const signup = (name: string, email: string, password: string, cb: (status: string) => void) => {
+    return apiAuth.signup(name, email, password, (name, token) => {
       if (token) {
         setUser({ name: name, token: token });
         cb("success");

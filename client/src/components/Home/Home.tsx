@@ -21,7 +21,9 @@ function Home() {
   const classes = useStyles();
 
   return <Box className={classes.root}>
-    {auth?.user ? <Paper elevation={2} className={classes.paper} /> : <LandingPage />}
+    {auth?.user ? <Paper elevation={2} className={classes.paper}>
+      {auth.user.name}
+    </Paper> : <LandingPage />}
   </Box>
 }
 

@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   scope '/api' do
     resources :notes
 
-    resources :users, only: [:create, :index] do
+    resources :users, only: [:create] do
       collection do
         post 'login'
         get 'auto_login'

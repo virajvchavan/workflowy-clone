@@ -6,7 +6,7 @@ class UsersController < ApiController
 
     if !user.nil? && user&.authenticate(user_params[:password])
       auth_token = JsonWebToken.encode(user_id: user.id.to_s)
-      render json: { token: auth_token }, status: :ok
+      render json: { token: auth_token, name: user.name }, status: :ok
     else
       render json: { error: 'Invalid username/password' }, status: :unauthorized
     end
@@ -23,15 +23,10 @@ class UsersController < ApiController
 
     if @user.save && @user.authenticate(user_params[:password])
       auth_token = JsonWebToken.encode(user_id: @user.id)
-      render json: { token: auth_token }, status: :ok
+      render json: { token: auth_token, name: @user.name }, status: :ok
     else
       render json: @user.errors, status: :unprocessable_entity
     end
-  end
-
-  def index
-    @users = User.all
-    render json: @users
   end
 
   private
@@ -42,6 +37,6 @@ class UsersController < ApiController
 
     # Only allow a trusted parameter "white list" through.
     def user_params
-      params.require(:user).permit(:email, :password)
+      params.require(:user).permit(:email, :password, :name)
     end
 end

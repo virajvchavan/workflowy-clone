@@ -48,7 +48,7 @@ function Signup() {
     setIsLoading(true);
     event.preventDefault();
     if (email && password && passwordConfirmation) {
-      auth?.signup(email, password, () => {
+      auth?.signup(name, email, password, () => {
         history.replace(from);
       });
     }
@@ -66,7 +66,7 @@ function Signup() {
   }, [password, passwordConfirmation])
 
   // todo: have more sophisticated form validations
-  let isFormValid = email && password && passwordConfirmation && password === passwordConfirmation;
+  let isFormValid = name && email && password && passwordConfirmation && password === passwordConfirmation;
 
   return <Container className={classes.root}>
     <form>
