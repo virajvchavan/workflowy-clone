@@ -2,6 +2,7 @@ import { createStyles, makeStyles, Paper, Theme } from "@material-ui/core";
 import React from "react";
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/use-auth';
+import ContentEditable from "react-contenteditable";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -9,6 +10,17 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
       height: theme.spacing(30)
     },
+    editable: {
+      fontFamily: 'sans-serif',
+      marginLeft: '10%',
+      width: '75%',
+      border: 'none',
+      padding: '5px',
+      resize: 'none',
+      '&focus': {
+        border: 'none'
+      }
+    }
   }),
 );
 
@@ -43,6 +55,16 @@ export default function Notes() {
   }, [auth]);
 
   return <Paper elevation={2} className={classes.paper}>
-    {notes.map(note => <p>{note.content}</p>)}
+    {notes.map((note, index) => {
+      return <ContentEditable
+        key={index}
+        className={classes.editable}
+        tagName="pre"
+        html={note.content} // innerHTML of the editable div
+        disabled={false} // use true to disable edition
+        onChange={(evt) => console.log(evt.target.value)} // handle innerHTML change
+        onBlur={(evt) => console.log("blurred")}
+      />
+    })}
   </Paper>
 }
