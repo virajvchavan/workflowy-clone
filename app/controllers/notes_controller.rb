@@ -4,7 +4,7 @@ class NotesController < ApiController
 
   # GET /notes
   def index
-    @notes = Note.all
+    @notes = Note.root_notes_json(@current_user.id)
 
     render json: @notes
   end
@@ -17,9 +17,9 @@ class NotesController < ApiController
   # POST /notes
   def create
     @note = Note.new(note_params)
-
+    @note.user = @current_user
     if @note.save
-      render json: @note, status: :created, location: @note
+      render json: @note, status: :created
     else
       render json: @note.errors, status: :unprocessable_entity
     end
@@ -47,6 +47,6 @@ class NotesController < ApiController
 
     # Only allow a trusted parameter "white list" through.
     def note_params
-      params.require(:note).permit(:content)
+      params.require(:note).permit(:content, :path, :order)
     end
 end

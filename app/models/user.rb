@@ -9,7 +9,8 @@ class User
 
   field :password_digest, type: String
 
+  has_many :notes
+
   validates :email, :presence => true
   index({ email: 1 }, { unique: true, name: "email_index" })
-
 end

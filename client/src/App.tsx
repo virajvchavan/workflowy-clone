@@ -10,13 +10,6 @@ import { Container } from '@material-ui/core';
 import Signup from './components/Signup';
 
 function App() {
-  // useEffect(() => {
-  //   window.fetch('/api/notes')
-  //     .then(response => response.json())
-  //     .then(json => console.log(json))
-  //     .catch(error => console.log(error));
-  // }, []);
-
   return (<ProvideAuth>
     <Container>
       <Router>
