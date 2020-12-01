@@ -12,51 +12,60 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     editable: {
       fontFamily: 'sans-serif',
-      marginLeft: '10%',
+      display: "list-item",
       width: '75%',
       border: 'none',
       padding: '5px',
       resize: 'none',
+      margin: 0,
       '&focus': {
         border: 'none'
       }
+    },
+    child_notes: {
+      marginLeft: "20px"
     }
   }),
 );
 
 interface NotesType {
-  _id: IdOrUserId;
+  id: string;
   content: string;
-  order: number;
-  path: string;
-  user_id: IdOrUserId;
-}
-interface IdOrUserId {
-  $oid: string;
+  child_notes: Array<NotesType>
 }
 
-export default function Notes() {
+interface Props {
+  notesIn?: Array<NotesType>
+  className?: string
+}
+
+export default function Notes(props: Props) {
   const classes = useStyles();
   const auth = useAuth();
   const [notes, setNotes] = useState<Array<NotesType>>([]);
 
   useEffect(() => {
-    window.fetch('/api/notes', {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-          'Authorization': "Bearer " + auth?.user?.token,
-          'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.json())
-    .then(json => setNotes(json))
-    .catch(error => console.log(error));
-  }, [auth]);
+    if (!props.notesIn) {
+      window.fetch('/api/notes', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Authorization': "Bearer " + auth?.user?.token,
+            'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(json => setNotes(json))
+      .catch(error => console.log(error));
+    } else {
+      setNotes(props.notesIn);
+    }
+  }, [auth, props.notesIn]);
 
-  return <Paper elevation={2} className={classes.paper}>
+  return <>
     {notes.map((note, index) => {
-      return <ContentEditable
+      return <div className={props.className}>
+        <ContentEditable
         key={index}
         className={classes.editable}
         tagName="pre"
@@ -65,6 +74,8 @@ export default function Notes() {
         onChange={(evt) => console.log(evt.target.value)} // handle innerHTML change
         onBlur={(evt) => console.log("blurred")}
       />
+      {note.child_notes ? <Notes className={classes.child_notes} notesIn={note.child_notes} /> : null}
+      </div>
     })}
-  </Paper>
+  </>
 }

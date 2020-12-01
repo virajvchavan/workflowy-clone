@@ -30,7 +30,11 @@ class Note
         parent = json
         parent_ids = note.path.delete_prefix("/").split("/")
         parent_ids.each do |note_id|
-          parent = parent[note_id.to_s]
+          if (parent[:child_notes])
+            parent = parent[:child_notes][note_id.to_s]
+          else
+            parent = parent[note_id.to_s]
+          end
         end
         parent[:child_notes][note.id.to_s] = { content: note.content, child_notes: {} }
       end
