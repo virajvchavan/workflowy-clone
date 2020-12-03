@@ -7,11 +7,11 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     notesRoot: {
       marginLeft: "40px",
-      paddingTop: "10px"
+      paddingTop: "10px",
+      paddingBottom: "10px"
     },
     paper: {
-      width: "100%",
-      height: theme.spacing(30)
+      width: "100%"
     },
   }),
 );
@@ -19,6 +19,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function RootNotes() {
   const classes = useStyles();
   const auth = useAuth();
+  const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>([]);
   const [notes, setNotes] = useState<Array<NotesType>>([]);
 
   useEffect(() => {
@@ -31,11 +32,45 @@ export default function RootNotes() {
       }
     })
     .then(response => response.json())
-    .then(json => setNotes(json))
+    .then(json => {
+      setNotes(json);
+      setSyncedNotes(json);
+    })
     .catch(error => console.log(error));
   }, [auth]);
 
+  const onNoteContentChange = (deepIndex: string, newContent: string) => {
+    let newNotes = [...notes];
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    let noteToUpdate = newNotes[indices[0]];
+    indices.shift();
+    indices.forEach(index => {
+      noteToUpdate = noteToUpdate.child_notes[index];
+    });
+    noteToUpdate.content = newContent;
+    setNotes(newNotes);
+  }
+
+  const addAChildNote = (deepIndex: string) => {
+    let newNotes = [...notes];
+    let emptyNote = {content: "", id: "", child_notes: []};
+    if (deepIndex) {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let noteToUpdate = newNotes[indices[0]];
+      indices.shift();
+      indices.forEach(index => {
+        noteToUpdate = noteToUpdate.child_notes[index];
+      });
+      noteToUpdate.child_notes.push(emptyNote);
+    } else {
+      newNotes.push(emptyNote)
+    }
+    setNotes(newNotes);
+  }
+
   return <Paper elevation={2} className={classes.paper}>
-    <div className={classes.notesRoot}><Notes notes={notes} /></div>
+    <div className={classes.notesRoot}>
+      <Notes notes={notes} index="" onNoteContentChange={onNoteContentChange} addAChildNote={addAChildNote} />
+    </div>
   </Paper>
 }
