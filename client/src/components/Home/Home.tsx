@@ -1,18 +1,21 @@
-import { makeStyles, Theme, createStyles, Box, Paper } from "@material-ui/core";
+import { makeStyles, Theme, createStyles, Box } from "@material-ui/core";
 import React from "react";
 import { useAuth } from "../../hooks/use-auth";
 import LandingPage from '../LandingPage';
-import Notes from "../Notes/Notes";
+import RootNote from "../Notes/RootNote";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       marginTop: "30px"
     },
+    notesRoot: {
+      marginLeft: "40px",
+      paddingTop: "10px"
+    },
     paper: {
       width: "100%",
-      height: theme.spacing(30),
-      paddingLeft: "10%"
+      height: theme.spacing(30)
     },
   }),
 );
@@ -22,7 +25,7 @@ function Home() {
   const classes = useStyles();
 
   return <Box className={classes.root}>
-    {auth?.user ? <Paper elevation={2} className={classes.paper}><Notes /></Paper>: <LandingPage />}
+    {auth?.user ? <RootNote />: <LandingPage />}
   </Box>
 }
 
