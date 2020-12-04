@@ -59,6 +59,7 @@ export default function Notes(props: Props) {
       return <div className={props.className}>
         <ContentEditable
           key={deepIndex}
+          id={'note' + deepIndex}
           className={classes.editable}
           tagName="pre"
           html={note.content} // innerHTML of the editable div

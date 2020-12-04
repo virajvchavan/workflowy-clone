@@ -54,6 +54,7 @@ export default function RootNotes() {
   const addAChildNote = (deepIndex: string) => {
     let newNotes = [...notes];
     let emptyNote = {content: "", id: "", child_notes: []};
+    let noteIndexToFocusOn = "";
     if (deepIndex) {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let noteToUpdate = newNotes[indices[0]];
@@ -62,10 +63,21 @@ export default function RootNotes() {
         noteToUpdate = noteToUpdate.child_notes[index];
       });
       noteToUpdate.child_notes.push(emptyNote);
+      noteIndexToFocusOn = `${deepIndex}.${noteToUpdate.child_notes.length - 1}`;
     } else {
-      newNotes.push(emptyNote)
+      newNotes.push(emptyNote);
+      noteIndexToFocusOn = `.${newNotes.length - 1}`;
     }
     setNotes(newNotes);
+    focusOnANote(noteIndexToFocusOn);
+  }
+
+  // directly accessing dom here to avoid passing refs in an infinitely nested list
+  // passing refs too deep might be a performance issue as well
+  const focusOnANote = (deepIndex: string) => {
+    setTimeout(() => {
+      document.getElementById("note" + deepIndex)?.focus();
+    }, 0);
   }
 
   return <Paper elevation={2} className={classes.paper}>
