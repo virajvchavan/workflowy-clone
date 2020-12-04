@@ -8,6 +8,8 @@ const useStyles = makeStyles((theme: Theme) =>
     editable: {
       fontFamily: 'sans-serif',
       display: "list-item",
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'keep-all',
       width: '75%',
       border: 'none',
       padding: '5px',
