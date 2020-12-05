@@ -113,8 +113,21 @@ export default function RootNotes() {
   const handleBackspaceWhenEmpty = (deepIndex: string) => {
     let newNotes = [...notes];
     let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    // if the element has no chlidren, delete it
-    // if the element has any children, add them to its parent
+    let originalIndex = indices.pop() || 0;
+    let parentNote = getNoteForIndices(newNotes, indices);
+    let currentNote = parentNote.child_notes[originalIndex];
+    if (currentNote.child_notes.length > 0) {
+      // add its children to its parent
+      parentNote.child_notes.push(...currentNote.child_notes);
+    }
+    parentNote.child_notes.splice(originalIndex, 1);
+    setNotes(newNotes);
+  
+    let indexToFocusOn = `.${indices.join(".")}`;
+    if (originalIndex > 0) {
+      indexToFocusOn += `.${originalIndex - 1}`;
+    }
+    focusOnANote(indexToFocusOn);
   }
 
   // directly accessing dom here to avoid passing refs in an infinitely nested list
@@ -127,7 +140,12 @@ export default function RootNotes() {
 
   return <Paper elevation={2} className={classes.paper}>
     <div className={classes.notesRoot}>
-      <Notes notes={notes} index="" onNoteContentChange={onNoteContentChange} addAChildNote={addAChildNote} handleTabPress={handleTabPress} />
+      <Notes notes={notes} index=""
+        onNoteContentChange={onNoteContentChange}
+        addAChildNote={addAChildNote}
+        handleTabPress={handleTabPress}
+        handleBackspaceWhenEmpty={handleBackspaceWhenEmpty}
+      />
     </div>
   </Paper>
 }

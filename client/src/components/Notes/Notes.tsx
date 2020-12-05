@@ -38,6 +38,7 @@ interface Props {
   onNoteContentChange: (deepIndex: string, newContent: string) => void,
   addAChildNote: (deepIndex: string) => void,
   handleTabPress: (deepIndex: string) => void,
+  handleBackspaceWhenEmpty: (deepIndex: string) => void
 }
 
 const sanitizeConf = {
@@ -60,6 +61,11 @@ export default function Notes(props: Props) {
           evt.preventDefault();
           evt.stopPropagation();
           props.handleTabPress(deepIndex);
+        } else if (evt.key === "Backspace") {
+          if (!note.content) {
+            evt.preventDefault();
+            props.handleBackspaceWhenEmpty(deepIndex);
+          }
         }
       }
 
@@ -84,6 +90,7 @@ export default function Notes(props: Props) {
             onNoteContentChange={props.onNoteContentChange}
             addAChildNote={props.addAChildNote}
             handleTabPress={props.handleTabPress}
+            handleBackspaceWhenEmpty={props.handleBackspaceWhenEmpty}
           />
           : null
         }
