@@ -51,21 +51,27 @@ export default function RootNotes() {
     setNotes(newNotes);
   }
 
+  // indices are the sequence in which to access a note in the state
+  const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
+    let noteToUpdate = newNotes[indices[0]];
+    indices.forEach((index, i) => {
+      if (i !== 0) {
+        noteToUpdate = noteToUpdate.child_notes[index];
+      }
+    });
+    return noteToUpdate;
+  }
+
   const addAChildNote = (deepIndex: string) => {
     let newNotes = [...notes];
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
     let emptyNote = {content: "", id: "", child_notes: []};
     let noteIndexToFocusOn = "";
 
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
     if (indices.length > 1) {
-      let noteToUpdate = newNotes[indices[0]];
       let newNoteIndex: number = indices.pop() || 0;
       newNoteIndex += 1;
-      indices.forEach((index, i) => {
-        if (i !== 0) {
-          noteToUpdate = noteToUpdate.child_notes[index];
-        }
-      });
+      let noteToUpdate = getNoteForIndices(newNotes, indices);
       noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
       noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
     } else {
@@ -74,6 +80,27 @@ export default function RootNotes() {
     }
     setNotes(newNotes);
     focusOnANote(noteIndexToFocusOn);
+  }
+
+  const handleTabPress = (deepIndex: string) => {
+    let newNotes = [...notes];
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    let originalIndex = indices.pop() || 0;
+    let newLeafIndex: number;
+    if (originalIndex > 0) {
+      if (indices.length === 0) {
+        let noteToMove = newNotes.splice(originalIndex, 1)[0];
+        newNotes[originalIndex - 1].child_notes.push(noteToMove);
+        newLeafIndex = newNotes[originalIndex - 1].child_notes.length - 1;
+      } else {
+        let originalParent = getNoteForIndices(newNotes, indices);
+        let noteToMove = originalParent.child_notes.splice(originalIndex, 1)[0];
+        originalParent.child_notes[originalIndex - 1].child_notes.push(noteToMove);
+        newLeafIndex = originalParent.child_notes[originalIndex - 1].child_notes.length - 1;
+      }
+      setNotes(newNotes);
+      focusOnANote(`.${indices.join(".")}.${originalIndex - 1}.${newLeafIndex}`);
+    }
   }
 
   // directly accessing dom here to avoid passing refs in an infinitely nested list
@@ -86,7 +113,7 @@ export default function RootNotes() {
 
   return <Paper elevation={2} className={classes.paper}>
     <div className={classes.notesRoot}>
-      <Notes notes={notes} index="" onNoteContentChange={onNoteContentChange} addAChildNote={addAChildNote} />
+      <Notes notes={notes} index="" onNoteContentChange={onNoteContentChange} addAChildNote={addAChildNote} handleTabPress={handleTabPress} />
     </div>
   </Paper>
 }

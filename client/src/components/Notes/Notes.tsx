@@ -36,7 +36,8 @@ interface Props {
   className?: string,
   index: string,
   onNoteContentChange: (deepIndex: string, newContent: string) => void,
-  addAChildNote: (deepIndex: string) => void
+  addAChildNote: (deepIndex: string) => void,
+  handleTabPress: (deepIndex: string) => void,
 }
 
 const sanitizeConf = {
@@ -51,10 +52,14 @@ export default function Notes(props: Props) {
     {props.notes.map((note, index) => {
       let deepIndex = `${props.index}.${index}`;
 
-      const onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
+      const onKeyDown = (evt: React.KeyboardEvent<HTMLDivElement>) => {
         if (evt.key === "Enter" && !evt.shiftKey) {
           evt.preventDefault();
           props.addAChildNote(deepIndex);
+        } else if (evt.key === "Tab") {
+          evt.preventDefault();
+          evt.stopPropagation();
+          props.handleTabPress(deepIndex);
         }
       }
 
@@ -68,7 +73,7 @@ export default function Notes(props: Props) {
           disabled={false} // use true to disable edition
           onChange={(evt) => props.onNoteContentChange(deepIndex, sanitizeHtml(evt.target.value, sanitizeConf))} // handle innerHTML change
           onBlur={(evt) => console.log("blurred")}
-          onKeyPress={onKeyPress}
+          onKeyDown={onKeyDown}
         />
 
         {note.child_notes ?
@@ -78,6 +83,7 @@ export default function Notes(props: Props) {
             notes={note.child_notes}
             onNoteContentChange={props.onNoteContentChange}
             addAChildNote={props.addAChildNote}
+            handleTabPress={props.handleTabPress}
           />
           : null
         }
