@@ -68,16 +68,23 @@ export default function RootNotes() {
     let emptyNote = {content: "", id: "", child_notes: []};
     let noteIndexToFocusOn = "";
 
-    if (indices.length > 1) {
-      let newNoteIndex: number = indices.pop() || 0;
-      newNoteIndex += 1;
-      let noteToUpdate = getNoteForIndices(newNotes, indices);
-      noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
-      noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
+    let childrenOfCurrentNote = getNoteForIndices(newNotes, indices).child_notes;
+    if (childrenOfCurrentNote.length > 0) {
+      childrenOfCurrentNote.unshift(emptyNote);
+      noteIndexToFocusOn = deepIndex + ".0";
     } else {
-      newNotes.splice(indices[0] + 1, 0, emptyNote);
-      noteIndexToFocusOn = `.${indices[0] + 1}`;
+      if (indices.length > 1) {
+        let newNoteIndex: number = indices.pop() || 0;
+        newNoteIndex += 1;
+        let noteToUpdate = getNoteForIndices(newNotes, indices);
+        noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
+        noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
+      } else {
+        newNotes.splice(indices[0] + 1, 0, emptyNote);
+        noteIndexToFocusOn = `.${indices[0] + 1}`;
+      }
     }
+
     setNotes(newNotes);
     focusOnANote(noteIndexToFocusOn);
   }
@@ -101,6 +108,13 @@ export default function RootNotes() {
       setNotes(newNotes);
       focusOnANote(`.${indices.join(".")}.${originalIndex - 1}.${newLeafIndex}`);
     }
+  }
+
+  const handleBackspaceWhenEmpty = (deepIndex: string) => {
+    let newNotes = [...notes];
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    // if the element has no chlidren, delete it
+    // if the element has any children, add them to its parent
   }
 
   // directly accessing dom here to avoid passing refs in an infinitely nested list
