@@ -47,16 +47,16 @@ const sanitizeConf = {
 export default function Notes(props: Props) {
   const classes = useStyles();
 
-  const onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
-    if (evt.key === "Enter" && !evt.shiftKey) {
-      evt.preventDefault();
-      props.addAChildNote(props.index);
-    }
-  }
-
   return <>
     {props.notes.map((note, index) => {
       let deepIndex = `${props.index}.${index}`;
+
+      const onKeyPress = (evt: React.KeyboardEvent<HTMLDivElement>) => {
+        if (evt.key === "Enter" && !evt.shiftKey) {
+          evt.preventDefault();
+          props.addAChildNote(deepIndex);
+        }
+      }
 
       return <div className={props.className}>
         <ContentEditable

@@ -55,18 +55,22 @@ export default function RootNotes() {
     let newNotes = [...notes];
     let emptyNote = {content: "", id: "", child_notes: []};
     let noteIndexToFocusOn = "";
-    if (deepIndex) {
-      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    if (indices.length > 1) {
       let noteToUpdate = newNotes[indices[0]];
-      indices.shift();
-      indices.forEach(index => {
-        noteToUpdate = noteToUpdate.child_notes[index];
+      let newNoteIndex: number = indices.pop() || 0;
+      newNoteIndex += 1;
+      indices.forEach((index, i) => {
+        if (i !== 0) {
+          noteToUpdate = noteToUpdate.child_notes[index];
+        }
       });
-      noteToUpdate.child_notes.push(emptyNote);
-      noteIndexToFocusOn = `${deepIndex}.${noteToUpdate.child_notes.length - 1}`;
+      noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
+      noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
     } else {
-      newNotes.push(emptyNote);
-      noteIndexToFocusOn = `.${newNotes.length - 1}`;
+      newNotes.splice(indices[0] + 1, 0, emptyNote);
+      noteIndexToFocusOn = `.${indices[0] + 1}`;
     }
     setNotes(newNotes);
     focusOnANote(noteIndexToFocusOn);
