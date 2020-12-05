@@ -39,7 +39,8 @@ interface Props {
   addAChildNote: (deepIndex: string) => void,
   handleTabPress: (deepIndex: string) => void,
   handleBackspaceWhenEmpty: (deepIndex: string) => void,
-  handleUpKeys: (deepIndex: string) => void
+  handleUpKey: (deepIndex: string) => void
+  handleDownKey: (deepIndex: string) => void
 }
 
 const sanitizeConf = {
@@ -69,7 +70,10 @@ export default function Notes(props: Props) {
           }
         } else if (evt.key === "ArrowUp") {
           evt.preventDefault();
-          props.handleUpKeys(deepIndex);
+          props.handleUpKey(deepIndex);
+        } else if (evt.key === "ArrowDown") {
+          evt.preventDefault();
+          props.handleDownKey(deepIndex);
         }
       }
 
@@ -95,7 +99,8 @@ export default function Notes(props: Props) {
             addAChildNote={props.addAChildNote}
             handleTabPress={props.handleTabPress}
             handleBackspaceWhenEmpty={props.handleBackspaceWhenEmpty}
-            handleUpKeys={props.handleUpKeys}
+            handleUpKey={props.handleUpKey}
+            handleDownKey={props.handleDownKey}
           />
           : null
         }

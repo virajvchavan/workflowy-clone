@@ -130,7 +130,7 @@ export default function RootNotes() {
     focusOnANote(indexToFocusOn);
   }
 
-  const handleUpKeys = (deepIndex: string) => {
+  const handleUpKey = (deepIndex: string) => {
     let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
     if (indices[indices.length - 1] > 0) {
       // if has any siblings
@@ -143,6 +143,43 @@ export default function RootNotes() {
     } else {
       indices.pop();
     }
+    focusOnANote(`.${indices.join(".")}`);
+  }
+
+  const handleDownKey = (deepIndex: string) => {
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    let originalIndex = indices.pop() || 0;
+    if (indices.length === 0) {
+      let currentNote = notes[originalIndex];
+      if (currentNote.child_notes.length > 0) {
+        indices.push(originalIndex);
+        indices.push(0);
+      } else {
+        indices.push(originalIndex + 1);
+      }
+    } else {
+      let parentNote = getNoteForIndices(notes, indices);
+      let currentNote = parentNote.child_notes[originalIndex];
+      if (currentNote.child_notes.length > 0) {
+        indices.push(originalIndex);
+        indices.push(0);
+      } else {
+        indices.push(originalIndex);
+          while (true) {
+            indices[indices.length - 1] = indices[indices.length - 1] + 1;
+            if (indices.length === 1) {
+              break;
+            }
+            // doing it this way because accessing parent notes of a note would be expensive
+            if (document.getElementById(`note.${indices.join(".")}`)) {
+              break;
+            } else {
+              indices.pop();
+            }
+          }
+      }
+    }
+   
     focusOnANote(`.${indices.join(".")}`);
   }
 
@@ -161,7 +198,8 @@ export default function RootNotes() {
         addAChildNote={addAChildNote}
         handleTabPress={handleTabPress}
         handleBackspaceWhenEmpty={handleBackspaceWhenEmpty}
-        handleUpKeys={handleUpKeys}
+        handleUpKey={handleUpKey}
+        handleDownKey={handleDownKey}
       />
     </div>
   </Paper>
