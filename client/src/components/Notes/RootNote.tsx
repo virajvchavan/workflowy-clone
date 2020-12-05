@@ -130,6 +130,22 @@ export default function RootNotes() {
     focusOnANote(indexToFocusOn);
   }
 
+  const handleUpKeys = (deepIndex: string) => {
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+    if (indices[indices.length - 1] > 0) {
+      // if has any siblings
+      indices[indices.length - 1] = indices[indices.length - 1] -1;
+      let noteToFocus = getNoteForIndices(notes, indices);
+      while (noteToFocus.child_notes.length > 0) {
+        indices.push(noteToFocus.child_notes.length - 1);
+        noteToFocus = noteToFocus.child_notes[noteToFocus.child_notes.length - 1]
+      }
+    } else {
+      indices.pop();
+    }
+    focusOnANote(`.${indices.join(".")}`);
+  }
+
   // directly accessing dom here to avoid passing refs in an infinitely nested list
   // passing refs too deep might be a performance issue as well
   const focusOnANote = (deepIndex: string) => {
@@ -145,6 +161,7 @@ export default function RootNotes() {
         addAChildNote={addAChildNote}
         handleTabPress={handleTabPress}
         handleBackspaceWhenEmpty={handleBackspaceWhenEmpty}
+        handleUpKeys={handleUpKeys}
       />
     </div>
   </Paper>
