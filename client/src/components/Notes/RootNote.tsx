@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
-import { stat } from "fs";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -149,7 +148,7 @@ export default function RootNotes() {
       // if has any siblings
       indices[indices.length - 1] = indices[indices.length - 1] -1;
       let noteToFocus = getNoteForIndices(notes, indices);
-      while (noteToFocus.child_notes.length > 0) {
+      while (noteToFocus.child_notes.length > 0 && !noteToFocus.collapsed) {
         indices.push(noteToFocus.child_notes.length - 1);
         noteToFocus = noteToFocus.child_notes[noteToFocus.child_notes.length - 1]
       }
@@ -164,7 +163,7 @@ export default function RootNotes() {
     let originalIndex = indices.pop() || 0;
     if (indices.length === 0) {
       let currentNote = notes[originalIndex];
-      if (currentNote.child_notes.length > 0) {
+      if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
         indices.push(originalIndex);
         indices.push(0);
       } else {
@@ -173,7 +172,7 @@ export default function RootNotes() {
     } else {
       let parentNote = getNoteForIndices(notes, indices);
       let currentNote = parentNote.child_notes[originalIndex];
-      if (currentNote.child_notes.length > 0) {
+      if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
         indices.push(originalIndex);
         indices.push(0);
       } else {
