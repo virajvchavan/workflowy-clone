@@ -80,8 +80,9 @@ export default function RootNotes() {
     let emptyNote = {content: "", id: "", child_notes: []};
     let noteIndexToFocusOn = "";
 
-    let childrenOfCurrentNote = getNoteForIndices(newNotes, indices).child_notes;
-    if (childrenOfCurrentNote.length > 0) {
+    let currentNote = getNoteForIndices(newNotes, indices);
+    let childrenOfCurrentNote = currentNote.child_notes;
+    if (childrenOfCurrentNote.length > 0 && !currentNote.collapsed) {
       childrenOfCurrentNote.unshift(emptyNote);
       noteIndexToFocusOn = deepIndex + ".0";
     } else {
@@ -90,6 +91,7 @@ export default function RootNotes() {
         newNoteIndex += 1;
         let noteToUpdate = getNoteForIndices(newNotes, indices);
         noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
+        noteToUpdate.collapsed = false;
         noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
       } else {
         newNotes.splice(indices[0] + 1, 0, emptyNote);
@@ -110,11 +112,13 @@ export default function RootNotes() {
       if (indices.length === 0) {
         let noteToMove = newNotes.splice(originalIndex, 1)[0];
         newNotes[originalIndex - 1].child_notes.push(noteToMove);
+        newNotes[originalIndex - 1].collapsed = false;
         newLeafIndex = newNotes[originalIndex - 1].child_notes.length - 1;
       } else {
         let originalParent = getNoteForIndices(newNotes, indices);
         let noteToMove = originalParent.child_notes.splice(originalIndex, 1)[0];
         originalParent.child_notes[originalIndex - 1].child_notes.push(noteToMove);
+        originalParent.child_notes[originalIndex - 1].collapsed = false;
         newLeafIndex = originalParent.child_notes[originalIndex - 1].child_notes.length - 1;
       }
       setNotes(newNotes);
