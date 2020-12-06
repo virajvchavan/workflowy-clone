@@ -7,12 +7,12 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     editable: {
       fontFamily: 'sans-serif',
-      display: "list-item",
       whiteSpace: 'pre-wrap',
       wordBreak: 'keep-all',
-      width: '75%',
+      width: "100%",
       border: 'none',
       padding: '5px',
+      paddingBottom: 0,
       resize: 'none',
       margin: 0,
       '&focus': {
@@ -21,6 +21,34 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     child_notes: {
       marginLeft: "20px"
+    },
+    noteRow: {
+      display: "inline-flex",
+      width: "100%",
+      '&:hover': {
+        '& $expander': {
+          color: 'black'
+        }
+      }
+    },
+    bullet: {
+      width: "18px",
+      height: "18px",
+      lineHeight: '37px',
+      cursor: "pointer"
+    },
+    expander: {
+      width: "15px",
+      height: "20px",
+      color: '#cecece',
+      transition: 'transform 200ms ease 0s',
+      lineHeight: '40px'
+    },
+    expanded: {
+      transform: 'rotateZ(90deg)'
+    },
+    emptySpace: {
+      width: "15px"
     }
   }),
 );
@@ -29,6 +57,7 @@ export interface NotesType {
   id: string;
   content: string;
   child_notes: Array<NotesType>,
+  collapsed? : boolean
 }
 
 interface Props {
@@ -40,7 +69,8 @@ interface Props {
   handleTabPress: (deepIndex: string) => void,
   handleBackspaceWhenEmpty: (deepIndex: string) => void,
   handleUpKey: (deepIndex: string) => void
-  handleDownKey: (deepIndex: string) => void
+  handleDownKey: (deepIndex: string) => void,
+  setCollapsedForNote: (deepIndex: string, state: boolean) => void
 }
 
 const sanitizeConf = {
@@ -78,19 +108,29 @@ export default function Notes(props: Props) {
       }
 
       return <div className={props.className}>
-        <ContentEditable
-          key={deepIndex}
-          id={'note' + deepIndex}
-          className={classes.editable}
-          tagName="pre"
-          html={note.content} // innerHTML of the editable div
-          disabled={false} // use true to disable edition
-          onChange={(evt) => props.onNoteContentChange(deepIndex, sanitizeHtml(evt.target.value, sanitizeConf))} // handle innerHTML change
-          onBlur={(evt) => console.log("blurred")}
-          onKeyDown={onKeyDown}
-        />
+        <div className={classes.noteRow}>
+          {note.child_notes.length > 0 ? (
+            <div className={classes.expander} onClick={() => props.setCollapsedForNote(deepIndex, !note.collapsed)}>
+              <svg className={!note.collapsed ? classes.expanded : undefined} width="20" height="20" viewBox="0 0 20 20" ><path d="M13.75 9.56879C14.0833 9.76124 14.0833 10.2424 13.75 10.4348L8.5 13.4659C8.16667 13.6584 7.75 13.4178 7.75 13.0329L7.75 6.97072C7.75 6.58582 8.16667 6.34525 8.5 6.5377L13.75 9.56879Z" stroke="none" fill="currentColor"></path></svg>
+            </div>
+          ): <div className={classes.emptySpace}></div>}
+          <div className={classes.bullet}>
+            <svg viewBox="0 0 18 18" fill="#747474"><circle cx="9" cy="9" r="3.5"></circle></svg>
+          </div>
+          <ContentEditable
+            key={deepIndex}
+            id={'note' + deepIndex}
+            className={classes.editable}
+            tagName="pre"
+            html={note.content} // innerHTML of the editable div
+            disabled={false} // use true to disable edition
+            onChange={(evt) => props.onNoteContentChange(deepIndex, sanitizeHtml(evt.target.value, sanitizeConf))} // handle innerHTML change
+            onBlur={(evt) => console.log("blurred")}
+            onKeyDown={onKeyDown}
+          />
+        </div>
 
-        {note.child_notes ?
+        {!note.collapsed && note.child_notes ?
           <Notes
             index={deepIndex}
             className={classes.child_notes}
@@ -101,6 +141,7 @@ export default function Notes(props: Props) {
             handleBackspaceWhenEmpty={props.handleBackspaceWhenEmpty}
             handleUpKey={props.handleUpKey}
             handleDownKey={props.handleDownKey}
+            setCollapsedForNote={props.setCollapsedForNote}
           />
           : null
         }

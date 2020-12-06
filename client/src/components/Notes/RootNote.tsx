@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
+import { stat } from "fs";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,7 +40,7 @@ export default function RootNotes() {
     .catch(error => console.log(error));
   }, [auth]);
 
-  const onNoteContentChange = (deepIndex: string, newContent: string) => {
+  const updateNoteField = (deepIndex: string, field: 'content' | 'collapsed', valueToSet: any) => {
     let newNotes = [...notes];
     let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
     let noteToUpdate = newNotes[indices[0]];
@@ -47,8 +48,20 @@ export default function RootNotes() {
     indices.forEach(index => {
       noteToUpdate = noteToUpdate.child_notes[index];
     });
-    noteToUpdate.content = newContent;
+    if (field === "content") {
+      noteToUpdate.content = valueToSet;
+    } else if (field === "collapsed") {
+      noteToUpdate.collapsed = valueToSet;
+    }
     setNotes(newNotes);
+  }
+
+  const onNoteContentChange = (deepIndex: string, newContent: string) => {
+    updateNoteField(deepIndex, "content", newContent);
+  }
+
+  const setCollapsedForNote = (deepIndex: string, state: boolean) => {
+    updateNoteField(deepIndex, "collapsed", state);
   }
 
   // indices are the sequence in which to access a note in the state
@@ -200,6 +213,7 @@ export default function RootNotes() {
         handleBackspaceWhenEmpty={handleBackspaceWhenEmpty}
         handleUpKey={handleUpKey}
         handleDownKey={handleDownKey}
+        setCollapsedForNote={setCollapsedForNote}
       />
     </div>
   </Paper>
