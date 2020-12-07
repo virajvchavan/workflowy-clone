@@ -148,29 +148,35 @@ export default function RootNotes() {
       if (indices.length === 0) {
         let currentNote = newNotes[originalIndex];
         if (!currentNote.content) {
+          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
-            evt.preventDefault();
             newNotes.push(...currentNote.child_notes);
           }
           newNotes.splice(originalIndex, 1);
+          let indexToFocusOn = `.${indices.join(".")}`;
+          if (originalIndex > 0) {
+            indexToFocusOn += `.${originalIndex - 1}`;
+          }
+          focusOnANote(indexToFocusOn);
         }
       } else {
         let parentNote = getNoteForIndices(newNotes, indices);
         let currentNote = parentNote.child_notes[originalIndex];
         if (!currentNote.content) {
+          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
             // add its children to its parent
-            evt.preventDefault();
             parentNote.child_notes.push(...currentNote.child_notes);
           }
           parentNote.child_notes.splice(originalIndex, 1);
+
+          let indexToFocusOn = `.${indices.join(".")}`;
+          if (originalIndex > 0) {
+            indexToFocusOn += `.${originalIndex - 1}`;
+          }
+          focusOnANote(indexToFocusOn);
         }
       }
-      // let indexToFocusOn = `.${indices.join(".")}`;
-      // if (originalIndex > 0) {
-      //   indexToFocusOn += `.${originalIndex - 1}`;
-      // }
-      // focusOnANote(indexToFocusOn);
     }));
   }
 
