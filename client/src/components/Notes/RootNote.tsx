@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
@@ -39,7 +39,7 @@ export default function RootNotes() {
   }, [auth]);
 
   const updateNoteField = (deepIndex: string, field: 'content' | 'collapsed', valueToSet: any) => {
-    setNotes(oldNotes => produce((oldNotes), newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let noteToUpdate = newNotes[indices[0]];
       indices.shift();
@@ -74,7 +74,7 @@ export default function RootNotes() {
   }
 
   const addAChildNote = (deepIndex: string) => {
-    setNotes(oldNotes => produce((oldNotes), newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let emptyNote = {content: "", id: "", child_notes: []};
       let noteIndexToFocusOn = "";
@@ -102,7 +102,7 @@ export default function RootNotes() {
   }
 
   const handleTabPress = (deepIndex: string) => {
-    setNotes(oldNotes => produce((oldNotes), newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let originalIndex = indices.pop() || 0;
       let newLeafIndex: number;
@@ -125,7 +125,7 @@ export default function RootNotes() {
   }
 
   const handleShiftTabPress = (deepIndex: string) => {
-    setNotes(oldNotes => produce((oldNotes), newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
 
       if (indices.length === 1) return;
@@ -142,7 +142,7 @@ export default function RootNotes() {
   }
 
   const handleBackspaceWhenEmpty = (deepIndex: string) => {
-    setNotes(oldNotes => produce((oldNotes), newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let originalIndex = indices.pop() || 0;
       let parentNote = getNoteForIndices(newNotes, indices);
@@ -162,7 +162,7 @@ export default function RootNotes() {
   }
 
   const handleUpKey = (deepIndex: string) => {
-    setNotes(oldNotes => produce(oldNotes, newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       if (indices[indices.length - 1] > 0) {
         // if has any siblings
@@ -180,7 +180,7 @@ export default function RootNotes() {
   }
 
   const handleDownKey = (deepIndex: string) => {
-    setNotes(oldNotes => produce(oldNotes, newNotes => {
+    setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let originalIndex = indices.pop() || 0;
       if (indices.length === 0) {
