@@ -126,6 +126,23 @@ export default function RootNotes() {
     }
   }
 
+  const handleShiftTabPress = (deepIndex: string) => {
+    let newNotes = [...notes];
+    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+
+    if (indices.length === 1) return;
+
+    let originalIndex = indices.pop() || 0;
+    let parentIndex = indices.pop() || 0;
+    if (indices.length === 0) {
+      newNotes.splice(parentIndex + 1, 0, newNotes[parentIndex].child_notes.splice(originalIndex, 1)[0]);
+    } else {
+      let grandParentNote = getNoteForIndices(newNotes, indices);
+      grandParentNote.child_notes.splice(parentIndex + 1, 0, grandParentNote.child_notes[parentIndex].child_notes.splice(originalIndex, 1)[0])
+    }
+    setNotes(newNotes);
+  }
+
   const handleBackspaceWhenEmpty = (deepIndex: string) => {
     let newNotes = [...notes];
     let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -217,6 +234,7 @@ export default function RootNotes() {
         handleUpKey={handleUpKey}
         handleDownKey={handleDownKey}
         setCollapsedForNote={setCollapsedForNote}
+        handleShiftTabPress={handleShiftTabPress}
       />
     </div>
   </Paper>

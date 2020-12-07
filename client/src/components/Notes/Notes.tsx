@@ -70,7 +70,8 @@ interface Props {
   handleBackspaceWhenEmpty: (deepIndex: string) => void,
   handleUpKey: (deepIndex: string) => void
   handleDownKey: (deepIndex: string) => void,
-  setCollapsedForNote: (deepIndex: string, state: boolean) => void
+  setCollapsedForNote: (deepIndex: string, state: boolean) => void,
+  handleShiftTabPress: (deepIndex: string) => void,
 }
 
 const sanitizeConf = {
@@ -92,7 +93,11 @@ export default function Notes(props: Props) {
         } else if (evt.key === "Tab") {
           evt.preventDefault();
           evt.stopPropagation();
-          props.handleTabPress(deepIndex);
+          if (evt.shiftKey) {
+            props.handleShiftTabPress(deepIndex);
+          } else {
+            props.handleTabPress(deepIndex);
+          }
         } else if (evt.key === "Backspace") {
           if (!note.content) {
             evt.preventDefault();
@@ -142,6 +147,7 @@ export default function Notes(props: Props) {
             handleUpKey={props.handleUpKey}
             handleDownKey={props.handleDownKey}
             setCollapsedForNote={props.setCollapsedForNote}
+            handleShiftTabPress={props.handleShiftTabPress}
           />
           : null
         }
