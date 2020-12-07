@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
+import produce from 'immer';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -19,7 +20,6 @@ const useStyles = makeStyles((theme: Theme) =>
 export default function RootNotes() {
   const classes = useStyles();
   const auth = useAuth();
-  const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>([]);
   const [notes, setNotes] = useState<Array<NotesType>>([]);
 
   useEffect(() => {
@@ -34,25 +34,24 @@ export default function RootNotes() {
     .then(response => response.json())
     .then(json => {
       setNotes(json);
-      setSyncedNotes(json);
     })
     .catch(error => console.log(error));
   }, [auth]);
 
   const updateNoteField = (deepIndex: string, field: 'content' | 'collapsed', valueToSet: any) => {
-    let newNotes = [...notes];
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    let noteToUpdate = newNotes[indices[0]];
-    indices.shift();
-    indices.forEach(index => {
-      noteToUpdate = noteToUpdate.child_notes[index];
-    });
-    if (field === "content") {
-      noteToUpdate.content = valueToSet;
-    } else if (field === "collapsed") {
-      noteToUpdate.collapsed = valueToSet;
-    }
-    setNotes(newNotes);
+    setNotes(oldNotes => produce((oldNotes), newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let noteToUpdate = newNotes[indices[0]];
+      indices.shift();
+      indices.forEach(index => {
+        noteToUpdate = noteToUpdate.child_notes[index];
+      });
+      if (field === "content") {
+        noteToUpdate.content = valueToSet;
+      } else if (field === "collapsed") {
+        noteToUpdate.collapsed = valueToSet;
+      }
+    }));
   }
 
   const onNoteContentChange = (deepIndex: string, newContent: string) => {
@@ -75,128 +74,130 @@ export default function RootNotes() {
   }
 
   const addAChildNote = (deepIndex: string) => {
-    let newNotes = [...notes];
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    let emptyNote = {content: "", id: "", child_notes: []};
-    let noteIndexToFocusOn = "";
+    setNotes(oldNotes => produce((oldNotes), newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let emptyNote = {content: "", id: "", child_notes: []};
+      let noteIndexToFocusOn = "";
 
-    let currentNote = getNoteForIndices(newNotes, indices);
-    let childrenOfCurrentNote = currentNote.child_notes;
-    if (childrenOfCurrentNote.length > 0 && !currentNote.collapsed) {
-      childrenOfCurrentNote.unshift(emptyNote);
-      noteIndexToFocusOn = deepIndex + ".0";
-    } else {
-      if (indices.length > 1) {
-        let newNoteIndex: number = indices.pop() || 0;
-        newNoteIndex += 1;
-        let noteToUpdate = getNoteForIndices(newNotes, indices);
-        noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
-        noteToUpdate.collapsed = false;
-        noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
+      let currentNote = getNoteForIndices(newNotes, indices);
+      let childrenOfCurrentNote = currentNote.child_notes;
+      if (childrenOfCurrentNote.length > 0 && !currentNote.collapsed) {
+        childrenOfCurrentNote.unshift(emptyNote);
+        noteIndexToFocusOn = deepIndex + ".0";
       } else {
-        newNotes.splice(indices[0] + 1, 0, emptyNote);
-        noteIndexToFocusOn = `.${indices[0] + 1}`;
+        if (indices.length > 1) {
+          let newNoteIndex: number = indices.pop() || 0;
+          newNoteIndex += 1;
+          let noteToUpdate = getNoteForIndices(newNotes, indices);
+          noteToUpdate.child_notes.splice(newNoteIndex || 0, 0, emptyNote);
+          noteToUpdate.collapsed = false;
+          noteIndexToFocusOn = `.${indices.join(".")}.${newNoteIndex}`;
+        } else {
+          newNotes.splice(indices[0] + 1, 0, emptyNote);
+          noteIndexToFocusOn = `.${indices[0] + 1}`;
+        }
       }
-    }
-
-    setNotes(newNotes);
-    focusOnANote(noteIndexToFocusOn);
+      focusOnANote(noteIndexToFocusOn);
+    }));
   }
 
   const handleTabPress = (deepIndex: string) => {
-    let newNotes = [...notes];
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    let originalIndex = indices.pop() || 0;
-    let newLeafIndex: number;
-    if (originalIndex > 0) {
-      if (indices.length === 0) {
-        let noteToMove = newNotes.splice(originalIndex, 1)[0];
-        newNotes[originalIndex - 1].child_notes.push(noteToMove);
-        newNotes[originalIndex - 1].collapsed = false;
-        newLeafIndex = newNotes[originalIndex - 1].child_notes.length - 1;
-      } else {
-        let originalParent = getNoteForIndices(newNotes, indices);
-        let noteToMove = originalParent.child_notes.splice(originalIndex, 1)[0];
-        originalParent.child_notes[originalIndex - 1].child_notes.push(noteToMove);
-        originalParent.child_notes[originalIndex - 1].collapsed = false;
-        newLeafIndex = originalParent.child_notes[originalIndex - 1].child_notes.length - 1;
+    setNotes(oldNotes => produce((oldNotes), newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let originalIndex = indices.pop() || 0;
+      let newLeafIndex: number;
+      if (originalIndex > 0) {
+        if (indices.length === 0) {
+          let noteToMove = newNotes.splice(originalIndex, 1)[0];
+          newNotes[originalIndex - 1].child_notes.push(noteToMove);
+          newNotes[originalIndex - 1].collapsed = false;
+          newLeafIndex = newNotes[originalIndex - 1].child_notes.length - 1;
+        } else {
+          let originalParent = getNoteForIndices(newNotes, indices);
+          let noteToMove = originalParent.child_notes.splice(originalIndex, 1)[0];
+          originalParent.child_notes[originalIndex - 1].child_notes.push(noteToMove);
+          originalParent.child_notes[originalIndex - 1].collapsed = false;
+          newLeafIndex = originalParent.child_notes[originalIndex - 1].child_notes.length - 1;
+        }
+        focusOnANote(`.${indices.join(".")}.${originalIndex - 1}.${newLeafIndex}`);
       }
-      setNotes(newNotes);
-      focusOnANote(`.${indices.join(".")}.${originalIndex - 1}.${newLeafIndex}`);
-    }
+    }));
   }
 
   const handleBackspaceWhenEmpty = (deepIndex: string) => {
-    let newNotes = [...notes];
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    let originalIndex = indices.pop() || 0;
-    let parentNote = getNoteForIndices(newNotes, indices);
-    let currentNote = parentNote.child_notes[originalIndex];
-    if (currentNote.child_notes.length > 0) {
-      // add its children to its parent
-      parentNote.child_notes.push(...currentNote.child_notes);
-    }
-    parentNote.child_notes.splice(originalIndex, 1);
-    setNotes(newNotes);
-  
-    let indexToFocusOn = `.${indices.join(".")}`;
-    if (originalIndex > 0) {
-      indexToFocusOn += `.${originalIndex - 1}`;
-    }
-    focusOnANote(indexToFocusOn);
+    setNotes(oldNotes => produce((oldNotes), newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let originalIndex = indices.pop() || 0;
+      let parentNote = getNoteForIndices(newNotes, indices);
+      let currentNote = parentNote.child_notes[originalIndex];
+      if (currentNote.child_notes.length > 0) {
+        // add its children to its parent
+        parentNote.child_notes.push(...currentNote.child_notes);
+      }
+      parentNote.child_notes.splice(originalIndex, 1);
+    
+      let indexToFocusOn = `.${indices.join(".")}`;
+      if (originalIndex > 0) {
+        indexToFocusOn += `.${originalIndex - 1}`;
+      }
+      focusOnANote(indexToFocusOn);
+    }));
   }
 
   const handleUpKey = (deepIndex: string) => {
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    if (indices[indices.length - 1] > 0) {
-      // if has any siblings
-      indices[indices.length - 1] = indices[indices.length - 1] -1;
-      let noteToFocus = getNoteForIndices(notes, indices);
-      while (noteToFocus.child_notes.length > 0 && !noteToFocus.collapsed) {
-        indices.push(noteToFocus.child_notes.length - 1);
-        noteToFocus = noteToFocus.child_notes[noteToFocus.child_notes.length - 1]
+    setNotes(oldNotes => produce(oldNotes, newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      if (indices[indices.length - 1] > 0) {
+        // if has any siblings
+        indices[indices.length - 1] = indices[indices.length - 1] -1;
+        let noteToFocus = getNoteForIndices(newNotes, indices);
+        while (noteToFocus.child_notes.length > 0 && !noteToFocus.collapsed) {
+          indices.push(noteToFocus.child_notes.length - 1);
+          noteToFocus = noteToFocus.child_notes[noteToFocus.child_notes.length - 1]
+        }
+      } else {
+        indices.pop();
       }
-    } else {
-      indices.pop();
-    }
-    focusOnANote(`.${indices.join(".")}`);
+      focusOnANote(`.${indices.join(".")}`);
+    }));
   }
 
   const handleDownKey = (deepIndex: string) => {
-    let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-    let originalIndex = indices.pop() || 0;
-    if (indices.length === 0) {
-      let currentNote = notes[originalIndex];
-      if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
-        indices.push(originalIndex);
-        indices.push(0);
+    setNotes(oldNotes => produce(oldNotes, newNotes => {
+      let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
+      let originalIndex = indices.pop() || 0;
+      if (indices.length === 0) {
+        let currentNote = newNotes[originalIndex];
+        if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
+          indices.push(originalIndex);
+          indices.push(0);
+        } else {
+          indices.push(originalIndex + 1);
+        }
       } else {
-        indices.push(originalIndex + 1);
-      }
-    } else {
-      let parentNote = getNoteForIndices(notes, indices);
-      let currentNote = parentNote.child_notes[originalIndex];
-      if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
-        indices.push(originalIndex);
-        indices.push(0);
-      } else {
-        indices.push(originalIndex);
-          while (true) {
-            indices[indices.length - 1] = indices[indices.length - 1] + 1;
-            if (indices.length === 1) {
-              break;
+        let parentNote = getNoteForIndices(newNotes, indices);
+        let currentNote = parentNote.child_notes[originalIndex];
+        if (currentNote.child_notes.length > 0 && !currentNote.collapsed) {
+          indices.push(originalIndex);
+          indices.push(0);
+        } else {
+          indices.push(originalIndex);
+            while (true) {
+              indices[indices.length - 1] = indices[indices.length - 1] + 1;
+              if (indices.length === 1) {
+                break;
+              }
+              // doing it this way because accessing parent notes of a note would be expensive
+              if (document.getElementById(`note.${indices.join(".")}`)) {
+                break;
+              } else {
+                indices.pop();
+              }
             }
-            // doing it this way because accessing parent notes of a note would be expensive
-            if (document.getElementById(`note.${indices.join(".")}`)) {
-              break;
-            } else {
-              indices.pop();
-            }
-          }
+        }
       }
-    }
-   
-    focusOnANote(`.${indices.join(".")}`);
+      focusOnANote(`.${indices.join(".")}`);
+    }))
   }
 
   // directly accessing dom here to avoid passing refs in an infinitely nested list
