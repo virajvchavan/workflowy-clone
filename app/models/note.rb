@@ -21,6 +21,34 @@ class Note
   end
 
   def self.root_notes_json(user_id)
-    User.find(user_id).notes
+    notes = User.find(user_id).notes.order_by(path: :asc, order: :asc)
+    json = {}
+    notes.each do |note|
+      if note.path == "/"
+        json[note.id.to_s] = { content: note.content, child_notes: {} }
+      else
+        parent = json
+        parent_ids = note.path.delete_prefix("/").split("/")
+        parent_ids.each do |note_id|
+          if (parent[:child_notes])
+            parent = parent[:child_notes][note_id.to_s]
+          else
+            parent = parent[note_id.to_s]
+          end
+        end
+        parent[:child_notes][note.id.to_s] = { content: note.content, child_notes: {} }
+      end
+    end
+    get_notes_as_arrays(json)
+  end
+
+  private
+
+  def self.get_notes_as_arrays(notes)
+    res = []
+    notes.keys.each do |key|
+      res.push(notes[key].merge(id: key, child_notes: get_notes_as_arrays(notes[key][:child_notes])))
+    end
+    res
   end
 end
