@@ -141,14 +141,13 @@ export default function RootNotes() {
     }));
   }
 
-  const handleBackspaceWhenEmpty = (evt: React.KeyboardEvent<HTMLDivElement>, deepIndex: string) => {
+  const handleBackspaceWhenEmpty = (deepIndex: string) => {
     setNotes(produce((newNotes: NotesType[]) => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let originalIndex = indices.pop() || 0;
       if (indices.length === 0) {
         let currentNote = newNotes[originalIndex];
         if (!currentNote.content) {
-          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
             newNotes.push(...currentNote.child_notes);
           }
@@ -163,7 +162,6 @@ export default function RootNotes() {
         let parentNote = getNoteForIndices(newNotes, indices);
         let currentNote = parentNote.child_notes[originalIndex];
         if (!currentNote.content) {
-          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
             // add its children to its parent
             parentNote.child_notes.push(...currentNote.child_notes);
