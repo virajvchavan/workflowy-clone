@@ -4,6 +4,7 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
+import { detailedDiff } from 'deep-object-diff';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,8 +30,10 @@ export default function RootNotes() {
 
   useEffect(() => {
     if (syncedNotes.length > 0 && debouncedNotes.length > 0) {
-      console.log(syncedNotes);
-      console.log(debouncedNotes);
+      // console.log(syncedNotes);
+      // console.log(debouncedNotes);
+      console.log(detailedDiff(syncedNotes, debouncedNotes));
+      // setSyncedNotes(debouncedNotes);
     }
   }, [debouncedNotes, syncedNotes])
 
