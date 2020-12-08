@@ -119,7 +119,9 @@ export default function RootNotes() {
           originalParent.child_notes[originalIndex - 1].collapsed = false;
           newLeafIndex = originalParent.child_notes[originalIndex - 1].child_notes.length - 1;
         }
-        focusOnANote(`.${indices.join(".")}.${originalIndex - 1}.${newLeafIndex}`);
+        let indexToFocuson = indices.length > 0 ? `.${indices.join(".")}` : "";
+        indexToFocuson += `.${originalIndex - 1}.${newLeafIndex}`;
+        focusOnANote(indexToFocuson);
       }
     }));
   }
@@ -136,8 +138,15 @@ export default function RootNotes() {
         newNotes.splice(parentIndex + 1, 0, newNotes[parentIndex].child_notes.splice(originalIndex, 1)[0]);
       } else {
         let grandParentNote = getNoteForIndices(newNotes, indices);
-        grandParentNote.child_notes.splice(parentIndex + 1, 0, grandParentNote.child_notes[parentIndex].child_notes.splice(originalIndex, 1)[0])
+        grandParentNote.child_notes.splice(
+          parentIndex + 1,
+          0,
+          grandParentNote.child_notes[parentIndex].child_notes.splice(originalIndex, 1)[0]
+        )
       }
+      let indexToFocusOn = indices.length > 0 ? `.${indices.join(".")}` : "";
+      indexToFocusOn += `.${parentIndex + 1}`;
+      focusOnANote(indexToFocusOn);
     }));
   }
 
