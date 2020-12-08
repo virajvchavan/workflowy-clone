@@ -1,4 +1,4 @@
-Deployed here: https://blooming-taiga-58696.herokuapp.com/
+Deployed here: https://moar-notes.herokuapp.com
 
 ### Rails credentials
 - edit: `bin/rails credentials:edit`
