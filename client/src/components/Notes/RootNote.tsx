@@ -60,6 +60,7 @@ export default function RootNotes() {
 
   const setCollapsedForNote = (deepIndex: string, state: boolean) => {
     updateNoteField(deepIndex, "collapsed", state);
+    focusOnANote(deepIndex);
   }
 
   // indices are the sequence in which to access a note in the state
