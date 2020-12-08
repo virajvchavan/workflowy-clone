@@ -152,11 +152,7 @@ export default function RootNotes() {
             newNotes.push(...currentNote.child_notes);
           }
           newNotes.splice(originalIndex, 1);
-          let indexToFocusOn = `.${indices.join(".")}`;
-          if (originalIndex > 0) {
-            indexToFocusOn += `.${originalIndex - 1}`;
-          }
-          focusOnANote(indexToFocusOn);
+          focusOnANote(`.${originalIndex - 1}`);
         }
       } else {
         let parentNote = getNoteForIndices(newNotes, indices);
