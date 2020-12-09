@@ -67,7 +67,7 @@ interface Props {
   onNoteContentChange: (deepIndex: string, newContent: string) => void,
   addAChildNote: (deepIndex: string) => void,
   handleTabPress: (deepIndex: string) => void,
-  handleBackspaceWhenEmpty: (deepIndex: string) => void,
+  handleBackspaceWhenEmpty: (evt: React.KeyboardEvent<HTMLDivElement>, deepIndex: string) => void,
   handleUpKey: (deepIndex: string) => void
   handleDownKey: (deepIndex: string) => void,
   setCollapsedForNote: (deepIndex: string, state: boolean) => void,
@@ -99,7 +99,7 @@ export default function Notes(props: Props) {
             props.handleTabPress(deepIndex);
           }
         } else if (evt.key === "Backspace") {
-          props.handleBackspaceWhenEmpty(deepIndex);
+          props.handleBackspaceWhenEmpty(evt, deepIndex);
         } else if (evt.key === "ArrowUp") {
           evt.preventDefault();
           props.handleUpKey(deepIndex);

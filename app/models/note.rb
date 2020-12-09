@@ -5,7 +5,7 @@ class Note
   # stores the path from the root node
   field :path, type: String
   field :order, type: Integer
-  field :collapsed, type: Boolean
+  field :collapsed, type: Boolean, default: false
 
   belongs_to :user, class_name: "User"
 
