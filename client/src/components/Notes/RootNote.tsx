@@ -15,6 +15,12 @@ const useStyles = makeStyles((theme: Theme) =>
     paper: {
       width: "100%"
     },
+    addBtn: {
+      marginLeft: "20px",
+      cursor: "pointer",
+      color: 'grey',
+      marginTop: "5px"
+    }
   }),
 );
 
@@ -29,8 +35,9 @@ export default function RootNotes() {
 
   useEffect(() => {
     if (syncedNotes.length > 0 && debouncedNotes.length > 0) {
-      console.log(syncedNotes);
-      console.log(debouncedNotes);
+      // console.log(syncedNotes);
+      // console.log(debouncedNotes);
+      console.log("calling the api");
     }
   }, [debouncedNotes, syncedNotes])
 
@@ -253,6 +260,13 @@ export default function RootNotes() {
     }))
   }
 
+  const onAddBtnClick = () => {
+    setNotes(produce(newNotes => {
+      newNotes.push({content: "", id: "", child_notes: []});
+      focusOnANote(`.${newNotes.length - 1}`);
+    }));
+  }
+
   // directly accessing dom here to avoid passing refs in an infinitely nested list
   // passing refs too deep might be a performance issue as well
   const focusOnANote = (deepIndex: string) => {
@@ -273,6 +287,7 @@ export default function RootNotes() {
         setCollapsedForNote={setCollapsedForNote}
         handleShiftTabPress={handleShiftTabPress}
       />
+      <div className={classes.addBtn} onClick={onAddBtnClick}>+</div>
     </div>
   </Paper>
 }

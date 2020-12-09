@@ -25,8 +25,9 @@ class Note
     notes = User.find(user_id).notes.order_by(path: :asc, order: :asc)
     json = {}
     notes.each do |note|
+      note_json = { content: note.content, child_notes: {}, collapsed: note.collapsed }
       if note.path == "/"
-        json[note.id.to_s] = { content: note.content, child_notes: {} }
+        json[note.id.to_s] = note_json
       else
         parent = json
         parent_ids = note.path.delete_prefix("/").split("/")
@@ -37,7 +38,7 @@ class Note
             parent = parent[note_id.to_s]
           end
         end
-        parent[:child_notes][note.id.to_s] = { content: note.content, child_notes: {} }
+        parent[:child_notes][note.id.to_s] = note_json
       end
     end
     get_notes_as_arrays(json)
