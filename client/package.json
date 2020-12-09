@@ -15,6 +15,7 @@
     "@types/react-router-dom": "^5.1.6",
     "@types/sanitize-html": "^1.27.0",
     "immer": "^8.0.0",
+    "jsondiffpatch": "^0.4.1",
     "react": "^17.0.1",
     "react-contenteditable": "^3.3.5",
     "react-dom": "^17.0.1",

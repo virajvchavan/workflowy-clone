@@ -4,7 +4,13 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
-import { start } from "repl";
+
+let jsonDiff = require('jsondiffpatch').create({
+  objectHash: (obj: NotesType) => obj.id,
+  textDiff: {
+    minLength: 1000000
+  }
+});
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,6 +46,7 @@ export default function RootNotes() {
       // console.log(syncedNotes);
       // console.log(debouncedNotes);
       console.log("calling the api");
+      console.log(jsonDiff.diff(syncedNotes, debouncedNotes));
     }
   }, [startSyncing, debouncedNotes, syncedNotes])
 
