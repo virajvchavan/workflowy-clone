@@ -4,6 +4,7 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
+import { start } from "repl";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,17 +30,18 @@ export default function RootNotes() {
   const auth = useAuth();
   const [notes, setNotes] = useState<Array<NotesType>>([]);
   const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>([]);
+  const [startSyncing, setStartSyncing] = useState<Boolean>(false);
 
   // if the user doesn't type anything for 5 seconds straight, make API calls to the server
   const [debouncedNotes] = useDebounce(notes, 5000);
 
   useEffect(() => {
-    if (syncedNotes.length > 0 && debouncedNotes.length > 0) {
+    if (startSyncing) {
       // console.log(syncedNotes);
       // console.log(debouncedNotes);
       console.log("calling the api");
     }
-  }, [debouncedNotes, syncedNotes])
+  }, [startSyncing, debouncedNotes, syncedNotes])
 
   useEffect(() => {
     window.fetch('/api/notes', {
@@ -54,6 +56,7 @@ export default function RootNotes() {
     .then(json => {
       setNotes(json);
       setSyncedNotes(json);
+      setStartSyncing(true);
     })
     .catch(error => console.log(error));
   }, [auth]);

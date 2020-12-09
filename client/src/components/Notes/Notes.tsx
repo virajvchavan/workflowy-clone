@@ -109,7 +109,7 @@ export default function Notes(props: Props) {
         }
       }
 
-      return <div className={props.className}>
+      return <div className={props.className} key={deepIndex}>
         <div className={classes.noteRow}>
           {note.child_notes.length > 0 ? (
             <div className={classes.expander} onClick={() => props.setCollapsedForNote(deepIndex, !note.collapsed)}>
@@ -120,7 +120,6 @@ export default function Notes(props: Props) {
             <svg viewBox="0 0 18 18" fill="#747474"><circle cx="9" cy="9" r="3.5"></circle></svg>
           </div>
           <ContentEditable
-            key={deepIndex}
             id={'note' + deepIndex}
             className={classes.editable}
             tagName="pre"
