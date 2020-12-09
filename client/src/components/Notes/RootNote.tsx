@@ -4,13 +4,7 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
-
-let jsonDiff = require('jsondiffpatch').create({
-  objectHash: (obj: NotesType) => obj.id,
-  textDiff: {
-    minLength: 1000000
-  }
-});
+import { syncChangesWithServer } from "./utils";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,20 +29,27 @@ export default function RootNotes() {
   const classes = useStyles();
   const auth = useAuth();
   const [notes, setNotes] = useState<Array<NotesType>>([]);
-  const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>([]);
+  const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>();
   const [startSyncing, setStartSyncing] = useState<Boolean>(false);
 
   // if the user doesn't type anything for 5 seconds straight, make API calls to the server
   const [debouncedNotes] = useDebounce(notes, 5000);
 
   useEffect(() => {
-    if (startSyncing) {
-      // console.log(syncedNotes);
-      // console.log(debouncedNotes);
-      console.log("calling the api");
-      console.log(jsonDiff.diff(syncedNotes, debouncedNotes));
+    if (startSyncing && syncedNotes) {
+      syncChangesWithServer(debouncedNotes, syncedNotes).then(response => {
+        if (response) {
+          setSyncedNotes(debouncedNotes);
+        }
+      });
     }
   }, [startSyncing, debouncedNotes, syncedNotes])
+
+  useEffect(() => {
+    if (syncedNotes && debouncedNotes.length === notes.length) {
+      setStartSyncing(true);
+    }
+  }, [debouncedNotes, notes, syncedNotes]);
 
   useEffect(() => {
     window.fetch('/api/notes', {
@@ -63,7 +64,6 @@ export default function RootNotes() {
     .then(json => {
       setNotes(json);
       setSyncedNotes(json);
-      setStartSyncing(true);
     })
     .catch(error => console.log(error));
   }, [auth]);
