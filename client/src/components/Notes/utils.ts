@@ -13,26 +13,30 @@ interface SyncedDataResponse {
 }
 
 type NoteFields = {
+  id?: string,
   content? : string,
-  collapsed?: string
+  collapsed?: string,
+  child_notes?: AddedTransaction[]
+}
+
+type AddedTransaction = {
+  id: string,
+  index: number,
+  parent_id: string,
+  fields?: NoteFields
 }
 
 interface Transactions {
-  add: Array<{
-    id?: string,
-    index?: number,
-    parent_id: string,
-    fields?: NoteFields
+  added: Array<AddedTransaction>,
+  deleted:  Array<{
+    id: string
   }>,
-  delete:  Array<{
-    id?: string
-  }>,
-  update: Array<{
-    id?: string,
+  updated: Array<{
+    id: string,
     fields?: NoteFields
   }>,
   move_same_parent: Array<{
-    id?: string,
+    id: string,
     new_index?: number
   }>
 }
@@ -50,7 +54,7 @@ interface Transactions {
 
 const generateTransactions = (key: string, changes: JSON, indexes: Array<number>, newNotes: NotesType[]): Transactions => {
   let transactions: Transactions = {
-    add: [], delete: [], update: [], move_same_parent: []
+    added: [], deleted: [], updated: [], move_same_parent: []
   };
   if (key[0] === "_") {
     // it's either a delete or move
@@ -60,7 +64,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         let noteId = getNoteForIndices(newNotes, indexes).child_notes[changes[1]].id;
         transactions.move_same_parent.push({ id: noteId, new_index: changes[1] });
       } else if (changes.length === 3) {
-        transactions.delete.push({ id: changes[0].id });
+        transactions.deleted.push({ id: changes[0].id });
       }
     }
   } else {
@@ -71,7 +75,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         console.log("getting parent from: " + indexes);
         parent_id = getNoteForIndices(newNotes, indexes).id;
       }
-      transactions.add.push({parent_id: parent_id, id: changes[0].id, index: parseInt(key), fields: changes[0]});
+      transactions.added.push({parent_id: parent_id, id: changes[0].id, index: parseInt(key), fields: changes[0]});
     } else {
       // update the content/collapsed
       let indices_for_note = [...indexes, parseInt(key)];
@@ -87,7 +91,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         fields.collapsed = changes["collapsed"][1] ? changes["collapsed"][1] : changes["collapsed"][0];
       }
       if (Object.keys(fields).length > 0) {
-        transactions.update.push({id: getNoteForIndices(newNotes, indices_for_note).id, fields: fields});
+        transactions.updated.push({id: getNoteForIndices(newNotes, indices_for_note).id, fields: fields});
       }
     }
   }
@@ -97,7 +101,28 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
 const correctDeletedTransactions = (transactions: Transactions) => {
   // some notes may be moved from one parent to another, but they'll show up as deleted + added
   // we need to remove note_ids from transactions with type 'delete' that are not really deleted, but moved
+  // let deleteIds = transactions.deleted.map(transaction => transaction.id);
+  let idsToNotDelete: string[] = [];
+  transactions.added.forEach(transaction => {
+    idsToNotDelete.push(...getAllAddedNoteIds(transaction));
+  });
+
+  transactions.deleted = transactions.deleted.filter(transaction => {
+    return !idsToNotDelete.includes(transaction.id)
+  });
+
   return transactions;
+}
+
+const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
+  let result: string[] = [];
+  result.push(addedTransaction.id);
+  if (addedTransaction.fields?.child_notes?.length) {
+    addedTransaction.fields.child_notes.forEach(transaction => {
+      result.push(...getAllAddedNoteIds(transaction));
+    });
+  }
+  return result;
 }
 
 export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[]) => {
@@ -113,7 +138,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
 
 const createTransactionsFromChanges = (changes: any, indexes: Array<number>, newNotes: NotesType[]) => {
   let transactions: Transactions = {
-    add: [], delete: [], update: [], move_same_parent: []
+    added: [], deleted: [], updated: [], move_same_parent: []
   };
   if (changes["_t"] && changes["_t"] === "a") {
     changes && Object.keys(changes).forEach(key => {
@@ -127,9 +152,9 @@ const createTransactionsFromChanges = (changes: any, indexes: Array<number>, new
 
 const mergeTransactionObjects = (t1: Transactions, t2: Transactions): Transactions => {
   return {
-    add: [...t1.add, ...t2.add],
-    delete: [...t1.delete, ...t2.delete],
-    update: [...t1.update, ...t2.update],
+    added: [...t1.added, ...t2.added],
+    deleted: [...t1.deleted, ...t2.deleted],
+    updated: [...t1.updated, ...t2.updated],
     move_same_parent: [...t1.move_same_parent, ...t2.move_same_parent]
   }
 }
