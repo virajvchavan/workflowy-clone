@@ -43,7 +43,8 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
     let indexFromLhs = key.slice(1);
     if (Array.isArray(changes)) {
       if (changes.length === 2) {
-        transactions.push({ type: "move_same_parent", id: "asdada", new_index: changes[1] });
+        let noteId = getNoteForIndices(newNotes, indexes).child_notes[changes[1]].id;
+        transactions.push({ type: "move_same_parent", id: noteId, new_index: changes[1] });
       } else if (changes.length === 3) {
         transactions.push({ type: "delete", id: changes[0].id });
       }
