@@ -60,8 +60,9 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
       transactions.push({type: "add", parent_id: parent_id, id: changes[0].id, new_index: parseInt(key), fields: changes[0]});
     } else {
       // update the content/collapsed
+      let indices_for_note = [...indexes, parseInt(key)];
       if ("child_notes" in changes) {
-        transactions.push(...createTransactionsFromChanges(changes["child_notes"], [...indexes, parseInt(key)], newNotes));
+        transactions.push(...createTransactionsFromChanges(changes["child_notes"], indices_for_note, newNotes));
       }
 
       let fields: NoteFields = {};
@@ -72,10 +73,16 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         fields.collapsed = changes["collapsed"][1] ? changes["collapsed"][1] : changes["collapsed"][0];
       }
       if (Object.keys(fields).length > 0) {
-        transactions.push({type: "update", id: "asdad", fields: fields});
+        transactions.push({type: "update", id: getNoteForIndices(newNotes, indices_for_note).id, fields: fields});
       }
     }
   }
+  return correctDeletedTransactions(transactions);
+}
+
+const correctDeletedTransactions = (transactions: Transaction[]) => {
+  // some notes may be moved from one parent to another, but they'll show up as deleted + added
+  // we need to remove note_ids from transactions with type 'delete' that are not really deleted, but moved
   return transactions;
 }
 
