@@ -25,7 +25,18 @@ interface Transaction {
   fields?: NoteFields
 }
 
-const generateTransactions = (key: string, changes: JSON): Transaction[] => {
+  // indices are the sequence in which to access a note in the state
+  const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
+    let noteToUpdate = newNotes[indices[0]];
+    indices.forEach((index, i) => {
+      if (i !== 0) {
+        noteToUpdate = noteToUpdate.child_notes[index];
+      }
+    });
+    return noteToUpdate;
+  }
+
+const generateTransactions = (key: string, changes: JSON, indexes: Array<number>, newNotes: NotesType[]): Transaction[] => {
   let transactions: Transaction[] = [];
   if (key[0] === "_") {
     // it's either a delete or move
@@ -40,11 +51,16 @@ const generateTransactions = (key: string, changes: JSON): Transaction[] => {
   } else {
     // it's either an update for existing note or it's an addition of a note
     if (Array.isArray(changes)) {
-      transactions.push({type: "add", parent_id: "asda", id: changes[0].id, new_index: parseInt(key), fields: changes[0]});
+      let parent_id: string = "root";
+      if (indexes.length > 0) {
+        console.log("getting parent from: " + indexes);
+        parent_id = getNoteForIndices(newNotes, indexes).id;
+      }
+      transactions.push({type: "add", parent_id: parent_id, id: changes[0].id, new_index: parseInt(key), fields: changes[0]});
     } else {
       // update the content/collapsed
       if ("child_notes" in changes) {
-        transactions.push(...createTransactionsFromChanges(changes["child_notes"]));
+        transactions.push(...createTransactionsFromChanges(changes["child_notes"], [...indexes, parseInt(key)], newNotes));
       }
 
       let fields: NoteFields = {};
@@ -62,22 +78,22 @@ const generateTransactions = (key: string, changes: JSON): Transaction[] => {
   return transactions;
 }
 
-export const syncChangesWithServer = async (debouncedNotes: NotesType[], syncedNotes: NotesType[]) => {
+export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[]) => {
   console.log("calling the api");
-  let changes = jsonDiff.diff(syncedNotes, debouncedNotes);
+  let changes = jsonDiff.diff(syncedNotes, newNotes);
 
   if (!changes) return false;
 
-  console.log(createTransactionsFromChanges(changes));
+  console.log(createTransactionsFromChanges(changes, [], newNotes));
   return true;
 }
 
-function createTransactionsFromChanges(changes: any) {
+function createTransactionsFromChanges(changes: any, indexes: Array<number>, newNotes: NotesType[]) {
   let transactions: Transaction[] = [];
   if (changes["_t"] && changes["_t"] === "a") {
     changes && Object.keys(changes).forEach(key => {
       if (key !== "_t") {
-        transactions.push(...generateTransactions(key, changes[key]));
+        transactions.push(...generateTransactions(key, changes[key], indexes, newNotes));
       }
     });
   }
