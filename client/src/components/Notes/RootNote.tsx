@@ -36,8 +36,8 @@ export default function RootNotes() {
   const [debouncedNotes] = useDebounce(notes, 5000);
 
   useEffect(() => {
-    if (startSyncing && syncedNotes) {
-      syncChangesWithServer(debouncedNotes, syncedNotes).then(response => {
+    if (startSyncing && syncedNotes && auth?.user?.token) {
+      syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
         if (response) {
           setSyncedNotes(debouncedNotes);
         }

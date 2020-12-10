@@ -125,7 +125,7 @@ const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
   return result;
 }
 
-export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[]) => {
+export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string) => {
   console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);
 
@@ -133,6 +133,15 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
   console.log(correctDeletedTransactions(transactions));
+  fetch("/api/notes/process_transactions", {
+    method: "POST", credentials: 'include',
+    headers: {
+      'Authorization': "Bearer " + authToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(transactions)
+  });
+
   return true;
 }
 
