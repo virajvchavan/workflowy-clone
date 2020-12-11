@@ -15,9 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingBottom: 0,
       resize: 'none',
       margin: 0,
-      '&focus': {
-        border: 'none'
-      }
+      outline: '0px solid transparent'
     },
     child_notes: {
       marginLeft: "20px"
