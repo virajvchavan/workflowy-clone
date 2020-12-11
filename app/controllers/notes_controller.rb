@@ -41,8 +41,11 @@ class NotesController < ApiController
 
   # POST /notes/process_transactions
   def process_transactions
-    puts "processing transactions"
-    puts params
+    params[:deleted].each do |transaction|
+      Note.find(transaction[:id]).destroy
+      puts "deleted #{transaction[:id]}"
+    end
+
     render json: { status: "suceess" }
   end
 

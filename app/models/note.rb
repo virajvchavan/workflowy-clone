@@ -9,6 +9,8 @@ class Note
 
   belongs_to :user, class_name: "User"
 
+  before_destroy :remove_from_parent
+
   def add_new_child(note_params)
     new_note = Note.new(note_params);
     new_note.user = self.user
@@ -17,8 +19,18 @@ class Note
   end
 
   def child_notes_json
-    # todo
+    # todo: can be used when frontend requests data for only one note and its tree
     []
+  end
+
+  # corrects the field 'order' for siblings which come after a note
+  def remove_from_parent
+    siblings = Note.where(path: self.path)
+    siblings.each do |sibling|
+      if sibling.order > self.order
+        sibling.update(order: sibling.order - 1)
+      end
+    end
   end
 
   def self.root_notes_json(user_id)
