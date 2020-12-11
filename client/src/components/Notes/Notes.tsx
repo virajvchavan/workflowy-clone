@@ -67,7 +67,7 @@ interface Props {
   onNoteContentChange: (deepIndex: string, newContent: string) => void,
   addAChildNote: (deepIndex: string) => void,
   handleTabPress: (deepIndex: string) => void,
-  handleBackspaceWhenEmpty: (deepIndex: string) => void,
+  handleBackspaceWhenEmpty: (evt: React.KeyboardEvent<HTMLDivElement>, deepIndex: string) => void,
   handleUpKey: (deepIndex: string) => void
   handleDownKey: (deepIndex: string) => void,
   setCollapsedForNote: (deepIndex: string, state: boolean) => void,
@@ -99,7 +99,7 @@ export default function Notes(props: Props) {
             props.handleTabPress(deepIndex);
           }
         } else if (evt.key === "Backspace") {
-          props.handleBackspaceWhenEmpty(deepIndex);
+          props.handleBackspaceWhenEmpty(evt, deepIndex);
         } else if (evt.key === "ArrowUp") {
           evt.preventDefault();
           props.handleUpKey(deepIndex);
@@ -109,7 +109,7 @@ export default function Notes(props: Props) {
         }
       }
 
-      return <div className={props.className}>
+      return <div className={props.className} key={deepIndex}>
         <div className={classes.noteRow}>
           {note.child_notes.length > 0 ? (
             <div className={classes.expander} onClick={() => props.setCollapsedForNote(deepIndex, !note.collapsed)}>
@@ -120,7 +120,6 @@ export default function Notes(props: Props) {
             <svg viewBox="0 0 18 18" fill="#747474"><circle cx="9" cy="9" r="3.5"></circle></svg>
           </div>
           <ContentEditable
-            key={deepIndex}
             id={'note' + deepIndex}
             className={classes.editable}
             tagName="pre"

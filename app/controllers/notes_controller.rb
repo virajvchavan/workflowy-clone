@@ -39,6 +39,34 @@ class NotesController < ApiController
     @note.destroy
   end
 
+  # POST /notes/process_transactions
+  def process_transactions
+    params[:deleted].each do |transaction|
+      Note.find(transaction[:id]).destroy
+    end
+
+    params[:updated].each do |transaction|
+      note = Note.find(transaction[:id])
+      fields_to_update = {}
+      transaction[:fields].keys.each do |key|
+        fields_to_update[key] = transaction[:fields][key]
+      end
+      note.update(fields_to_update)
+    end
+
+    params[:added].each do |transaction|
+      Note.add_new_child_tree(
+        @current_user.id,
+        transaction[:parent_id],
+        transaction[:index],
+        transaction[:id],
+        transaction[:fields]
+      )
+    end
+
+    render json: { status: "suceess" }
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_note

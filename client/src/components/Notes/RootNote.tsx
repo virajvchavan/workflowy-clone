@@ -3,6 +3,8 @@ import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
+import { useDebounce } from 'use-debounce';
+import { syncChangesWithServer } from "./utils";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -14,6 +16,12 @@ const useStyles = makeStyles((theme: Theme) =>
     paper: {
       width: "100%"
     },
+    addBtn: {
+      marginLeft: "20px",
+      cursor: "pointer",
+      color: 'grey',
+      marginTop: "5px"
+    }
   }),
 );
 
@@ -21,6 +29,27 @@ export default function RootNotes() {
   const classes = useStyles();
   const auth = useAuth();
   const [notes, setNotes] = useState<Array<NotesType>>([]);
+  const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>();
+  const [startSyncing, setStartSyncing] = useState<Boolean>(false);
+
+  // if the user doesn't type anything for 5 seconds straight, make API calls to the server
+  const [debouncedNotes] = useDebounce(notes, 5000);
+
+  useEffect(() => {
+    if (startSyncing && syncedNotes && auth?.user?.token) {
+      syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
+        if (response) {
+          setSyncedNotes(debouncedNotes);
+        }
+      });
+    }
+  }, [startSyncing, debouncedNotes, syncedNotes])
+
+  useEffect(() => {
+    if (syncedNotes && debouncedNotes.length === notes.length) {
+      setStartSyncing(true);
+    }
+  }, [debouncedNotes, notes, syncedNotes]);
 
   useEffect(() => {
     window.fetch('/api/notes', {
@@ -34,6 +63,7 @@ export default function RootNotes() {
     .then(response => response.json())
     .then(json => {
       setNotes(json);
+      setSyncedNotes(json);
     })
     .catch(error => console.log(error));
   }, [auth]);
@@ -60,6 +90,7 @@ export default function RootNotes() {
 
   const setCollapsedForNote = (deepIndex: string, state: boolean) => {
     updateNoteField(deepIndex, "collapsed", state);
+    focusOnANote(deepIndex);
   }
 
   // indices are the sequence in which to access a note in the state
@@ -76,7 +107,7 @@ export default function RootNotes() {
   const addAChildNote = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
-      let emptyNote = {content: "", id: "", child_notes: []};
+      let emptyNote = {content: "", id: `temp_${Math.floor(Math.random() * 10000) }`, collapsed: false, child_notes: []};
       let noteIndexToFocusOn = "";
 
       let currentNote = getNoteForIndices(newNotes, indices);
@@ -150,13 +181,14 @@ export default function RootNotes() {
     }));
   }
 
-  const handleBackspaceWhenEmpty = (deepIndex: string) => {
+  const handleBackspaceWhenEmpty = (evt: React.KeyboardEvent<HTMLDivElement>, deepIndex: string) => {
     setNotes(produce((newNotes: NotesType[]) => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
       let originalIndex = indices.pop() || 0;
       if (indices.length === 0) {
         let currentNote = newNotes[originalIndex];
         if (!currentNote.content) {
+          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
             newNotes.push(...currentNote.child_notes);
           }
@@ -167,6 +199,7 @@ export default function RootNotes() {
         let parentNote = getNoteForIndices(newNotes, indices);
         let currentNote = parentNote.child_notes[originalIndex];
         if (!currentNote.content) {
+          evt.preventDefault();
           if (currentNote.child_notes.length > 0) {
             // add its children to its parent
             parentNote.child_notes.push(...currentNote.child_notes);
@@ -239,6 +272,13 @@ export default function RootNotes() {
     }))
   }
 
+  const onAddBtnClick = () => {
+    setNotes(produce(newNotes => {
+      newNotes.push({content: "", id: `temp_${Math.floor(Math.random() * 10000) }`, collapsed: false, child_notes: []});
+      focusOnANote(`.${newNotes.length - 1}`);
+    }));
+  }
+
   // directly accessing dom here to avoid passing refs in an infinitely nested list
   // passing refs too deep might be a performance issue as well
   const focusOnANote = (deepIndex: string) => {
@@ -259,6 +299,7 @@ export default function RootNotes() {
         setCollapsedForNote={setCollapsedForNote}
         handleShiftTabPress={handleShiftTabPress}
       />
+      <div className={classes.addBtn} onClick={onAddBtnClick}>+</div>
     </div>
   </Paper>
 }
