@@ -15,7 +15,7 @@ interface SyncedDataResponse {
 type NoteFields = {
   id?: string,
   content? : string,
-  collapsed?: string,
+  collapsed?: boolean,
   child_notes?: AddedTransaction[]
 }
 
@@ -88,7 +88,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         fields.content = changes["content"][1] ? changes["content"][1] : changes["content"][0];
       }
       if ("collapsed" in changes) {
-        fields.collapsed = changes["collapsed"][1] ? changes["collapsed"][1] : changes["collapsed"][0];
+        fields.collapsed = typeof changes["collapsed"][1] === 'undefined' ? changes["collapsed"][0] : changes["collapsed"][1];
       }
       if (Object.keys(fields).length > 0) {
         transactions.updated.push({id: getNoteForIndices(newNotes, indices_for_note).id, fields: fields});

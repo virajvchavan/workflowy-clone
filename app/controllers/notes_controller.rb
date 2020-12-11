@@ -43,7 +43,15 @@ class NotesController < ApiController
   def process_transactions
     params[:deleted].each do |transaction|
       Note.find(transaction[:id]).destroy
-      puts "deleted #{transaction[:id]}"
+    end
+
+    params[:updated].each do |transaction|
+      note = Note.find(transaction[:id])
+      fields_to_update = {}
+      transaction[:fields].keys.each do |key|
+        fields_to_update[key] = transaction[:fields][key]
+      end
+      note.update(fields_to_update)
     end
 
     render json: { status: "suceess" }
