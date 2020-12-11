@@ -80,6 +80,7 @@ interface userContextType  {
       name: string;
       token: string | null;
   } | null;
+  loading: Boolean;
   signin: signinType;
   signout: (cb: () => void) => void;
   signup: signupType
@@ -100,6 +101,7 @@ export function useAuth() {
 
 function useProvideAuth() {
   const [user, setUser] = useState<{name: string, token: string | null} | null>(null);
+  const [loading, setLoading] = useState<Boolean>(true);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("user");
@@ -112,6 +114,7 @@ function useProvideAuth() {
           // auth token has expired
           localStorage.clear();
         }
+        setLoading(false);
       });
     }
   }, []);
@@ -146,6 +149,7 @@ function useProvideAuth() {
 
   return {
     user,
+    loading,
     signin,
     signout,
     signup

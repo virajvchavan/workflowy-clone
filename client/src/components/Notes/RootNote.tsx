@@ -31,6 +31,7 @@ export default function RootNotes() {
   const [notes, setNotes] = useState<Array<NotesType>>([]);
   const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>();
   const [startSyncing, setStartSyncing] = useState<Boolean>(false);
+  const [loading, setLoading] = useState<Boolean>(true);
 
   // if the user doesn't type anything for 5 seconds straight, make API calls to the server
   const [debouncedNotes] = useDebounce(notes, 5000);
@@ -43,7 +44,7 @@ export default function RootNotes() {
         }
       });
     }
-  }, [startSyncing, debouncedNotes, syncedNotes])
+  }, [startSyncing, debouncedNotes, syncedNotes, auth?.user?.token])
 
   useEffect(() => {
     if (syncedNotes && debouncedNotes.length === notes.length) {
@@ -64,6 +65,7 @@ export default function RootNotes() {
     .then(json => {
       setNotes(json);
       setSyncedNotes(json);
+      setLoading(false);
     })
     .catch(error => console.log(error));
   }, [auth]);
@@ -286,6 +288,8 @@ export default function RootNotes() {
       document.getElementById("note" + deepIndex)?.focus();
     }, 0);
   }
+
+  if (loading) return <h3>Loading...</h3>;
 
   return <Paper elevation={2} className={classes.paper}>
     <div className={classes.notesRoot}>
