@@ -25,8 +25,25 @@ const apiAuth = {
       cb("", null);
     });
   },
-  autoSignin(cb: () => boolean) {
+  autoSignin(auth_token: string, cb: (status: "success" | "failed") => void) {
     // make a fetch call to api to check if the token is still valid
+    fetch("/api/users/auto_login", {
+      method: "GET",
+      headers: {
+        'Authorization': "Bearer " + auth_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }}).then(resp => resp.json())
+    .then(data => {
+      if (data.status === "logged_in") {
+        cb("success");
+      } else {
+        cb("failed");
+      }
+    }).catch(err => {
+      console.log("auto login failed: ", err);
+      cb("failed");
+    });
   },
   signup(name: string, email: string, password: string, cb: (name: string, token: string | null) => void) {
     fetch("/api/users", {
@@ -88,7 +105,14 @@ function useProvideAuth() {
     const loggedInUser = localStorage.getItem("user");
     if (loggedInUser) {
       const foundUser = JSON.parse(loggedInUser);
-      setUser(foundUser);
+      apiAuth.autoSignin(foundUser.token, (status) => {
+        if (status === "success") {
+          setUser(foundUser);
+        } else {
+          // auth token has expired
+          localStorage.clear();
+        }
+      });
     }
   }, []);
 
