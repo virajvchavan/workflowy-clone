@@ -7,11 +7,6 @@ let jsonDiff = require('jsondiffpatch').create({
   }
 });
 
-interface SyncedDataResponse {
-  indexPath: string[],
-  newId: string
-}
-
 type NoteFields = {
   id?: string,
   content? : string,
@@ -23,7 +18,8 @@ type AddedTransaction = {
   id: string,
   index: number,
   parent_id: string,
-  fields?: NoteFields
+  fields?: NoteFields,
+  indexPath: number[]
 }
 
 interface Transactions {
@@ -75,7 +71,13 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
         console.log("getting parent from: " + indexes);
         parent_id = getNoteForIndices(newNotes, indexes).id;
       }
-      transactions.added.push({parent_id: parent_id, id: changes[0].id, index: parseInt(key), fields: changes[0]});
+      transactions.added.push({
+        parent_id: parent_id,
+        id: changes[0].id,
+        index: parseInt(key),
+        fields: changes[0],
+        indexPath: [...indexes, parseInt(key)]
+      });
     } else {
       // update the content/collapsed
       let indices_for_note = [...indexes, parseInt(key)];
@@ -125,15 +127,25 @@ const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
   return result;
 }
 
-export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string) => {
+interface newNoteIds {
+  indexPath: number[],
+  newId: string
+}
+
+interface SyncedDataResponse {
+  status: "success" | "error",
+  newNoteIds?: newNoteIds[]
+}
+
+export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string): Promise<SyncedDataResponse> => {
   console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);
 
-  if (!changes) return false;
+  if (!changes) return { status: "error" };
 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
-  console.log(correctDeletedTransactions(transactions));
-  fetch("/api/notes/process_transactions", {
+
+  let response = await fetch("/api/notes/process_transactions", {
     method: "POST", credentials: 'include',
     headers: {
       'Authorization': "Bearer " + authToken,
@@ -142,7 +154,11 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
     body: JSON.stringify(transactions)
   });
 
-  return true;
+  if (response.status === 200) {
+    return { status: "success", newNoteIds: [] };
+  } else {
+    return { status: "error" };
+  }
 }
 
 const createTransactionsFromChanges = (changes: any, indexes: Array<number>, newNotes: NotesType[]) => {

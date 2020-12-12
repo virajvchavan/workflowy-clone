@@ -39,8 +39,10 @@ export default function RootNotes() {
   useEffect(() => {
     if (startSyncing && syncedNotes && auth?.user?.token) {
       syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
-        if (response) {
+        if (response.status === "success") {
           setSyncedNotes(debouncedNotes);
+        } else {
+          console.log("sync api failed");
         }
       });
     }

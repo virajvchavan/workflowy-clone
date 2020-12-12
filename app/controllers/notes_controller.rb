@@ -54,17 +54,20 @@ class NotesController < ApiController
       note.update(fields_to_update)
     end
 
+    new_note_ids = []
     params[:added].each do |transaction|
       Note.add_new_child_tree(
         @current_user.id,
         transaction[:parent_id],
         transaction[:index],
         transaction[:id],
-        transaction[:fields]
+        transaction[:fields],
+        transaction[:indexPath],
+        new_note_ids
       )
     end
 
-    render json: { status: "suceess" }
+    render json: { status: "success", new_ids: new_note_ids }
   end
 
   private
