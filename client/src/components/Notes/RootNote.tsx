@@ -4,7 +4,7 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
-import { syncChangesWithServer } from "./utils";
+import { syncChangesWithServer, newNoteIds } from './utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,15 +32,58 @@ export default function RootNotes() {
   const [syncedNotes, setSyncedNotes] = useState<Array<NotesType>>();
   const [startSyncing, setStartSyncing] = useState<Boolean>(false);
   const [loading, setLoading] = useState<Boolean>(true);
+  const [newIdsQueue, setNewIdsQueue] = useState<newNoteIds[]>([])
 
   // if the user doesn't type anything for 5 seconds straight, make API calls to the server
   const [debouncedNotes] = useDebounce(notes, 5000);
 
   useEffect(() => {
+    const insertNewIdsInNotes = (notesToChange: NotesType[], newNoteIds: newNoteIds[] | undefined): NotesType[] => {
+      newNoteIds?.forEach(item => {
+        let noteToUpdate = getNoteForIndices(notesToChange, item.indexPath);
+        if (noteToUpdate) {
+          noteToUpdate.id = item.note_id;
+        }
+      });
+      return notesToChange;
+    }
+
+    if (newIdsQueue.length > 0) {
+      setNewIdsQueue([]);
+      newIdsQueue.forEach(item => {
+        let newSynced = produce(debouncedNotes, draft => {
+          insertNewIdsInNotes(draft, newIdsQueue)
+        })
+        setSyncedNotes(newSynced);
+        setNotes(produce(newNotes => {
+          newNotes = insertNewIdsInNotes(newNotes, newIdsQueue);
+        }));
+      })
+    }
+  }, [debouncedNotes, newIdsQueue]);
+
+  useEffect(() => {
+    if (debouncedNotes.length === notes.length) {
+      setStartSyncing(true);
+    }
+  }, [debouncedNotes, notes]);
+
+  useEffect(() => {
     if (startSyncing && syncedNotes && auth?.user?.token) {
       syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
         if (response.status === "success") {
-          setSyncedNotes(debouncedNotes);
+          if (response.newNoteIds && response.newNoteIds.length > 0) {
+            setNewIdsQueue(response.newNoteIds);
+          } else {
+            setSyncedNotes(debouncedNotes);
+          }
+            // setNotes(produce(newNotes => {
+            //   newNotes = insertNewIdsInNotes(newNotes, );
+            // }));
+
+            // return produce(debouncedNotes, draftState => {
+            //   insertNewIdsInNotes(draftState, response.new_ids);
+            // });
         } else if (response.status === "no_diff") {
           console.log("no diff");
         } else {
@@ -48,13 +91,8 @@ export default function RootNotes() {
         }
       });
     }
-  }, [startSyncing, debouncedNotes, syncedNotes, auth?.user?.token])
-
-  useEffect(() => {
-    if (syncedNotes && debouncedNotes.length === notes.length) {
-      setStartSyncing(true);
-    }
-  }, [debouncedNotes, notes, syncedNotes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startSyncing, debouncedNotes, auth?.user?.token])
 
   useEffect(() => {
     window.fetch('/api/notes', {
