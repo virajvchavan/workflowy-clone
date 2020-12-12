@@ -42,7 +42,9 @@ class NotesController < ApiController
   # POST /notes/process_transactions
   def process_transactions
     params[:deleted].each do |transaction|
-      Note.find(transaction[:id]).destroy
+      if transaction[:id] && !transaction[:id].starts_with?("temp")
+        Note.find(transaction[:id]).destroy
+      end
     end
 
     params[:updated].each do |transaction|

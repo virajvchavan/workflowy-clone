@@ -97,7 +97,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
       }
     }
   }
-  return transactions;
+  return correctDeletedTransactions(transactions);
 }
 
 const correctDeletedTransactions = (transactions: Transactions) => {
@@ -127,13 +127,13 @@ const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
   return result;
 }
 
-interface newNoteIds {
+export interface newNoteIds {
   indexPath: number[],
-  newId: string
+  note_id: string
 }
 
 interface SyncedDataResponse {
-  status: "success" | "error",
+  status: "success" | "error" | "no_diff",
   newNoteIds?: newNoteIds[]
 }
 
@@ -141,7 +141,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);
 
-  if (!changes) return { status: "error" };
+  if (!changes) return { status: "no_diff" };
 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
 
@@ -155,7 +155,8 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   });
 
   if (response.status === 200) {
-    return { status: "success", newNoteIds: [] };
+    let result = await response.json();
+    return { status: "success", newNoteIds: result.new_ids };
   } else {
     return { status: "error" };
   }

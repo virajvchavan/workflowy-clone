@@ -41,6 +41,8 @@ export default function RootNotes() {
       syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
         if (response.status === "success") {
           setSyncedNotes(debouncedNotes);
+        } else if (response.status === "no_diff") {
+          console.log("no diff");
         } else {
           console.log("sync api failed");
         }
@@ -101,7 +103,7 @@ export default function RootNotes() {
   const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
     let noteToUpdate = newNotes[indices[0]];
     indices.forEach((index, i) => {
-      if (i !== 0) {
+      if (i !== 0 && noteToUpdate.child_notes[index]) {
         noteToUpdate = noteToUpdate.child_notes[index];
       }
     });
