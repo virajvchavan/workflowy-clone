@@ -4,7 +4,7 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
-import { syncChangesWithServer } from "./utils";
+import { syncChangesWithServer, newNoteIds } from './utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,9 +38,26 @@ export default function RootNotes() {
 
   useEffect(() => {
     if (startSyncing && syncedNotes && auth?.user?.token) {
+      const insertNewIdsInNotes = (notesToChange: NotesType[], newNoteIds: newNoteIds[] | undefined): NotesType[] => {
+        newNoteIds?.forEach(item => {
+          let noteToUpdate = getNoteForIndices(notesToChange, item.indexPath);
+          if (noteToUpdate) {
+            noteToUpdate.id = item.newId;
+          }
+        });
+        return notesToChange;
+      }
+
       syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
         if (response.status === "success") {
-          setSyncedNotes(debouncedNotes);
+          if (response.new_ids && response.new_ids.length > 0) {
+            setSyncedNotes(insertNewIdsInNotes(debouncedNotes, response.new_ids));
+            setNotes(produce(newNotes => {
+              newNotes = insertNewIdsInNotes(newNotes, response.new_ids);
+            }));
+          } else {
+            setSyncedNotes(debouncedNotes);
+          }
         } else {
           console.log("sync api failed");
         }
@@ -101,7 +118,7 @@ export default function RootNotes() {
   const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
     let noteToUpdate = newNotes[indices[0]];
     indices.forEach((index, i) => {
-      if (i !== 0) {
+      if (i !== 0 && noteToUpdate.child_notes[index]) {
         noteToUpdate = noteToUpdate.child_notes[index];
       }
     });

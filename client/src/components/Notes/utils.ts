@@ -54,7 +54,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
   };
   if (key[0] === "_") {
     // it's either a delete or move
-    let indexFromLhs = key.slice(1);
+    // let indexFromLhs = key.slice(1);
     if (Array.isArray(changes)) {
       if (changes.length === 2) {
         let noteId = getNoteForIndices(newNotes, indexes).child_notes[changes[1]].id;
@@ -127,14 +127,14 @@ const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
   return result;
 }
 
-interface newNoteIds {
+export interface newNoteIds {
   indexPath: number[],
   newId: string
 }
 
 interface SyncedDataResponse {
   status: "success" | "error",
-  newNoteIds?: newNoteIds[]
+  new_ids?: newNoteIds[]
 }
 
 export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string): Promise<SyncedDataResponse> => {
@@ -155,7 +155,8 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   });
 
   if (response.status === 200) {
-    return { status: "success", newNoteIds: [] };
+    let result = await response.json();
+    return { status: "success", new_ids: result.new_ids };
   } else {
     return { status: "error" };
   }
