@@ -9,7 +9,7 @@ import { syncChangesWithServer, newNoteIds } from './utils';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     notesRoot: {
-      marginLeft: "40px",
+      marginLeft: "14px",
       paddingTop: "10px",
       paddingBottom: "10px"
     },
@@ -326,7 +326,7 @@ export default function RootNotes() {
 
   if (loading) return <h3>Loading...</h3>;
 
-  return <Paper elevation={2} className={classes.paper}>
+  return <Paper elevation={1} className={classes.paper}>
     <div className={classes.notesRoot}>
       <Notes notes={notes} index=""
         onNoteContentChange={onNoteContentChange}
