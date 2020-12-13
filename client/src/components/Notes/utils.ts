@@ -97,7 +97,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
       }
     }
   }
-  return correctDeletedTransactions(transactions);
+  return transactions;
 }
 
 const correctDeletedTransactions = (transactions: Transactions) => {
@@ -144,6 +144,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   if (!changes) return { status: "no_diff" };
 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
+  transactions = correctDeletedTransactions(transactions);
 
   let response = await fetch("/api/notes/process_transactions", {
     method: "POST", credentials: 'include',

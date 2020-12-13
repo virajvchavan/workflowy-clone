@@ -40,6 +40,7 @@ class NotesController < ApiController
   end
 
   # POST /notes/process_transactions
+  # this action can be improved later: Send newly added ids as soon as possible and process the updates and delete_children_tree in background
   def process_transactions
     params[:deleted].each do |transaction|
       if transaction[:id] && !transaction[:id].starts_with?("temp")
@@ -67,6 +68,10 @@ class NotesController < ApiController
         transaction[:indexPath],
         new_note_ids
       )
+    end
+
+    params[:deleted].each do |note_id|
+      Note.delete_children_tree(note_id)
     end
 
     render json: { status: "success", new_ids: new_note_ids }
