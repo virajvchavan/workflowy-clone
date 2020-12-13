@@ -77,13 +77,6 @@ export default function RootNotes() {
           } else {
             setSyncedNotes(debouncedNotes);
           }
-            // setNotes(produce(newNotes => {
-            //   newNotes = insertNewIdsInNotes(newNotes, );
-            // }));
-
-            // return produce(debouncedNotes, draftState => {
-            //   insertNewIdsInNotes(draftState, response.new_ids);
-            // });
         } else if (response.status === "no_diff") {
           console.log("no diff");
         } else {
