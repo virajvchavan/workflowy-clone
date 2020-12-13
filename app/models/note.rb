@@ -88,9 +88,9 @@ class Note
         parent = json
         parent_ids = note.path.delete_prefix("/").split("/")
         parent_ids.each do |note_id|
-          if (parent[:child_notes])
+          if parent && parent[:child_notes] && parent[:child_notes][note_id.to_s]
             parent = parent[:child_notes][note_id.to_s]
-          else
+          elsif parent && parent[note_id.to_s]
             parent = parent[note_id.to_s]
           end
         end
