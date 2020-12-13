@@ -22,7 +22,7 @@ class UsersController < ApiController
     @user = User.new(user_params)
 
     if @user.save && @user.authenticate(user_params[:password])
-      auth_token = JsonWebToken.encode(user_id: @user.id)
+      auth_token = JsonWebToken.encode(user_id: @user.id.to_s)
       render json: { token: auth_token, name: @user.name }, status: :ok
     else
       render json: @user.errors, status: :unprocessable_entity

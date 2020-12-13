@@ -116,6 +116,8 @@ function useProvideAuth() {
         }
         setLoading(false);
       });
+    } else {
+      setLoading(false);
     }
   }, []);
 
