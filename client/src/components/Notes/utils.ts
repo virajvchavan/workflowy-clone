@@ -134,7 +134,7 @@ export interface newNoteIds {
   note_id: string
 }
 
-interface SyncedDataResponse {
+export interface SyncedDataResponse {
   status: "success" | "error" | "no_diff",
   newNoteIds?: newNoteIds[]
 }
