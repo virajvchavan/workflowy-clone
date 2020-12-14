@@ -108,16 +108,18 @@ export default function Notes(props: Props) {
         }
       }
 
-      return <div className={props.className} key={deepIndex}>
+      return <div className={props.className} key={deepIndex} data-testid={"noterow" + deepIndex} >
         <div className={classes.noteRow}>
           {note.child_notes.length > 0 ? (
-            <div className={classes.expander} onClick={() => props.setCollapsedForNote(deepIndex, !note.collapsed)}>
+            <div className={classes.expander} onClick={() => props.setCollapsedForNote(deepIndex, !note.collapsed)} data-testid={"collapseBtn" + deepIndex}>
               <svg className={!note.collapsed ? classes.expanded : undefined} width="20" height="20" viewBox="0 0 20 20" ><path d="M13.75 9.56879C14.0833 9.76124 14.0833 10.2424 13.75 10.4348L8.5 13.4659C8.16667 13.6584 7.75 13.4178 7.75 13.0329L7.75 6.97072C7.75 6.58582 8.16667 6.34525 8.5 6.5377L13.75 9.56879Z" stroke="none" fill="currentColor"></path></svg>
             </div>
           ): <div className={classes.emptySpace}></div>}
+
           <div className={classes.bullet}>
             <svg viewBox="0 0 18 18" fill="#747474"><circle cx="9" cy="9" r="3.5"></circle></svg>
           </div>
+
           <ContentEditable
             id={'note' + deepIndex}
             className={classes.editable}
