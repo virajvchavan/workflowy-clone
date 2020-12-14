@@ -77,6 +77,7 @@ const sanitizeConf = {
   allowedAttributes: { a: ["href"] }
 };
 
+// This component is supposed to be a dumb one, all logic related to notes should be handled in RootNote.tsx.
 export default function Notes(props: Props) {
   const classes = useStyles();
 

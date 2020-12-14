@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+// todo: use promises instead of callbacks
 const apiAuth = {
   signin(email: string, password: string, cb: (name: string, token: string | null) => void) {
     fetch("/api/users/login", {

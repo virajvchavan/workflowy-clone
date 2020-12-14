@@ -48,13 +48,15 @@ interface Transactions {
     return noteToUpdate;
   }
 
+// 'changes' are an instance of response by https://github.com/benjamine/jsondiffpatch
+// to understand the format of changes better, read this: https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
+// Any 'moves' are handled as a set of 'deleted' + 'added' transactions. The server is supposed to handle the rest
 const generateTransactions = (key: string, changes: JSON, indexes: Array<number>, newNotes: NotesType[]): Transactions => {
   let transactions: Transactions = {
     added: [], deleted: [], updated: [], move_same_parent: []
   };
   if (key[0] === "_") {
     // it's either a delete or move
-    let indexFromLhs = key.slice(1);
     if (Array.isArray(changes)) {
       if (changes.length === 2) {
         let noteId = getNoteForIndices(newNotes, indexes).child_notes[changes[1]].id;
@@ -100,10 +102,9 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
   return transactions;
 }
 
+// some notes may be moved from one parent to another, but they'll show up as deleted + added
+// we need to remove note_ids from transactions with type 'delete' that are not really deleted, but moved
 const correctDeletedTransactions = (transactions: Transactions) => {
-  // some notes may be moved from one parent to another, but they'll show up as deleted + added
-  // we need to remove note_ids from transactions with type 'delete' that are not really deleted, but moved
-  // let deleteIds = transactions.deleted.map(transaction => transaction.id);
   let idsToNotDelete: string[] = [];
   transactions.added.forEach(transaction => {
     idsToNotDelete.push(...getAllAddedNoteIds(transaction));
@@ -116,6 +117,7 @@ const correctDeletedTransactions = (transactions: Transactions) => {
   return transactions;
 }
 
+// an addedTransaction may have nested added transactions. This function extracts note ids for all these added transactions
 const getAllAddedNoteIds = (addedTransaction: AddedTransaction): string[] => {
   let result: string[] = [];
   result.push(addedTransaction.id);
@@ -137,6 +139,8 @@ interface SyncedDataResponse {
   newNoteIds?: newNoteIds[]
 }
 
+// Finds the diff beween syncedNotes and newNotes, generates transactions, and sends them to the server
+// Returns ids for newly added notes
 export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string): Promise<SyncedDataResponse> => {
   console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);

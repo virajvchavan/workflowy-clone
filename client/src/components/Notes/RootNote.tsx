@@ -37,6 +37,7 @@ export default function RootNotes() {
   // if the user doesn't type anything for 5 seconds straight, make API calls to the server
   const [debouncedNotes] = useDebounce(notes, 5000);
 
+  // insert newly added note ids to the correct notes in the states 'notes' and 'syncedNotes'
   useEffect(() => {
     const insertNewIdsInNotes = (notesToChange: NotesType[], newNoteIds: newNoteIds[] | undefined): NotesType[] => {
       newNoteIds?.forEach(item => {
@@ -62,12 +63,14 @@ export default function RootNotes() {
     }
   }, [debouncedNotes, newIdsQueue]);
 
+  // start syncing only after debounced notes are set for the first time 
   useEffect(() => {
     if (debouncedNotes.length === notes.length) {
       setStartSyncing(true);
     }
   }, [debouncedNotes, notes]);
 
+  // calls an API to save changes to the server
   useEffect(() => {
     if (startSyncing && syncedNotes && auth?.user?.token) {
       syncChangesWithServer(debouncedNotes, syncedNotes, auth?.user?.token).then(response => {
@@ -87,6 +90,7 @@ export default function RootNotes() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startSyncing, debouncedNotes, auth?.user?.token])
 
+  // call an API to fetch notes once the component is first rendered
   useEffect(() => {
     window.fetch('/api/notes', {
       method: 'GET',
@@ -105,6 +109,7 @@ export default function RootNotes() {
     .catch(error => console.log(error));
   }, [auth]);
 
+  // update fields for a specific note
   const updateNoteField = (deepIndex: string, field: 'content' | 'collapsed', valueToSet: any) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -141,6 +146,7 @@ export default function RootNotes() {
     return noteToUpdate;
   }
 
+  // adds an empty child note to a note identified by deepIndex
   const addAChildNote = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -169,6 +175,7 @@ export default function RootNotes() {
     }));
   }
 
+  // indent a note towards right if needed. (moves a note between parents)
   const handleTabPress = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -194,6 +201,7 @@ export default function RootNotes() {
     }));
   }
 
+   // indent a note towards left if needed. (moves a note between parents)
   const handleShiftTabPress = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -218,6 +226,7 @@ export default function RootNotes() {
     }));
   }
 
+  // logic for deleting a note
   const handleBackspaceWhenEmpty = (evt: React.KeyboardEvent<HTMLDivElement>, deepIndex: string) => {
     setNotes(produce((newNotes: NotesType[]) => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -253,6 +262,7 @@ export default function RootNotes() {
     }));
   }
 
+  // move focus to the note that is structurally above a note
   const handleUpKey = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -271,6 +281,7 @@ export default function RootNotes() {
     }));
   }
 
+  // move focus to the note that is structurally below a note
   const handleDownKey = (deepIndex: string) => {
     setNotes(produce(newNotes => {
       let indices = deepIndex.slice(1).split(".").map(i => parseInt(i));
@@ -309,6 +320,7 @@ export default function RootNotes() {
     }))
   }
 
+  // add an empty note at the root level
   const onAddBtnClick = () => {
     setNotes(produce(newNotes => {
       newNotes.push({content: "", id: `temp_${Math.floor(Math.random() * 10000) }`, collapsed: false, child_notes: []});
