@@ -1,7 +1,7 @@
 import { Box, Button, CircularProgress, Container, createStyles, FormHelperText, Grid, makeStyles, TextField, Theme } from '@material-ui/core';
 import React from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
-import useAuth from '../../hooks/use-auth';
+import { useAuth } from '../../hooks/use-auth';
 import { useState, useEffect } from 'react';
 
 interface LocationState {

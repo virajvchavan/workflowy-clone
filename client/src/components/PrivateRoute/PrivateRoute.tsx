@@ -1,6 +1,6 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
-import useAuth from '../../hooks/use-auth';
+import { useAuth } from '../../hooks/use-auth';
 
 interface privateRouteProps {
   children?: JSX.Element[] | JSX.Element;

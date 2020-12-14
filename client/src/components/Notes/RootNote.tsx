@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles, Theme, createStyles, Paper } from "@material-ui/core";
 import Notes, { NotesType } from "./Notes";
-import useAuth from '../../hooks/use-auth';
+import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
 import { syncChangesWithServer, newNoteIds, fetchAllNotes } from './utils';
