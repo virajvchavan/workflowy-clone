@@ -51,15 +51,13 @@ export default function RootNotes() {
 
     if (newIdsQueue.length > 0) {
       setNewIdsQueue([]);
-      newIdsQueue.forEach(item => {
-        let newSynced = produce(debouncedNotes, draft => {
-          insertNewIdsInNotes(draft, newIdsQueue)
-        })
-        setSyncedNotes(newSynced);
-        setNotes(produce(newNotes => {
-          newNotes = insertNewIdsInNotes(newNotes, newIdsQueue);
-        }));
+      let newSynced = produce(debouncedNotes, draft => {
+        insertNewIdsInNotes(draft, newIdsQueue)
       })
+      setSyncedNotes(newSynced);
+      setNotes(produce(newNotes => {
+        newNotes = insertNewIdsInNotes(newNotes, newIdsQueue);
+      }));
     }
   }, [debouncedNotes, newIdsQueue]);
 
