@@ -189,3 +189,15 @@ const mergeTransactionObjects = (t1: Transactions, t2: Transactions): Transactio
     move_same_parent: [...t1.move_same_parent, ...t2.move_same_parent]
   }
 }
+
+export const fetchAllNotes = async (auth_token: string) => {
+  let response = await window.fetch('/api/notes', {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+        'Authorization': "Bearer " + auth_token,
+        'Content-Type': 'application/json'
+    }
+  });
+  return await response.json();
+}

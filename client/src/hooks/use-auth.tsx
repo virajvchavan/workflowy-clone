@@ -96,7 +96,7 @@ export function ProvideAuth({ children }: { children: JSX.Element }) {
     </authContext.Provider>
 }
 
-export function useAuth() {
+export default function useAuth() {
   return useContext(authContext);
 }
 
