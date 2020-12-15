@@ -2,7 +2,7 @@ import { cleanup, render } from '@testing-library/react';
 import React from "react";
 import Home from '../Home';
 import * as utils from '../../Notes/utils';
-import * as serverApis from '../../Notes/serverApis';
+import serverApis from '../../Notes/serverApis';
 import { SyncedDataResponse } from '../../Notes/utils';
 import { NotesType } from '../../Notes/Notes';
 

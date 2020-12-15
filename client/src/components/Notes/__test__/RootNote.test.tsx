@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React from "react";
 import RootNotes from '../RootNote';
 import * as utils from '../utils';
-import * as serverApis from '../serverApis';
+import serverApis from '../serverApis';
 import { NotesType } from '../Notes';
+import { SyncedDataResponse } from '../utils';
 
 afterEach(cleanup);
 
@@ -19,9 +20,15 @@ let someNotes = [
   {"content":"three","child_notes":[],"collapsed":false,"id":"3"}
 ];
 
+let emptySyncChangesResponse: SyncedDataResponse = {
+ status: "success",
+ newNoteIds: []
+}
+
 function mockApiCalls(notes: NotesType[]) {
-  jest.spyOn(serverApis, 'fetchAllNotes').mockImplementation(async () => notes);
-  jest.spyOn(serverApis, 'callProcessTransactionsApi').mockImplementation(async () => new Response("[]", {status: 200, headers: {responseType: "application/json"}}));
+  const fetchAllNotes = jest.spyOn(serverApis, 'fetchAllNotes').mockImplementation(async () => notes);
+  const syncChangesWithServer = jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse);
+  return [fetchAllNotes, syncChangesWithServer];
 }
 
 jest.mock('../../../hooks/use-auth.tsx', () => ({
@@ -124,16 +131,17 @@ describe('Adding new notes', () => {
     let notes = [
       {"content":"two","child_notes":[{"content":"three","child_notes": [],"collapsed":false,"id":"3"}],"collapsed":false,"id":"2"},
     ]
-    mockApiCalls(notes);
+    const [fetchAllNotes, syncChangesWithServer] = mockApiCalls(notes);
 
     const { findByText, findByTestId } = render(<RootNotes />);
     let addBtn = await findByText("+");
+    expect(fetchAllNotes).toHaveBeenCalled();
 
     userEvent.click(addBtn);
     await findByTestId("noterow.1");
-    setTimeout(() => {
-      expect(utils.syncChangesWithServer).toHaveBeenCalled();
-    }, 4000);
+    window.setTimeout(() => {
+      expect(syncChangesWithServer).toHaveBeenCalled();
+    }, 5000);
   });
 
   test("it should add a new note at root level when enter key is pressed on a root note with no child notes", async () => {

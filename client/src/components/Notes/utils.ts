@@ -1,4 +1,4 @@
-import { callProcessTransactionsApi } from './serverApis';
+import serverApis from './serverApis';
 import { NotesType } from './Notes';
 
 let jsonDiff = require('jsondiffpatch').create({
@@ -71,7 +71,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
     if (Array.isArray(changes)) {
       let parent_id: string = "root";
       if (indexes.length > 0) {
-        console.log("getting parent from: " + indexes);
+        // console.log("getting parent from: " + indexes);
         parent_id = getNoteForIndices(newNotes, indexes).id;
       }
       transactions.added.push({
@@ -143,7 +143,6 @@ export interface SyncedDataResponse {
 // Finds the diff beween syncedNotes and newNotes, generates transactions, and sends them to the server
 // Returns ids for newly added notes
 export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string): Promise<SyncedDataResponse> => {
-  console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);
 
   if (!changes) return { status: "no_diff" };
@@ -151,7 +150,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
   transactions = correctDeletedTransactions(transactions);
 
-  let response = await callProcessTransactionsApi(authToken, transactions);
+  let response = await serverApis.callProcessTransactionsApi(authToken, transactions);
 
   if (response.status === 200) {
     let result = await response.json();

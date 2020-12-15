@@ -1,6 +1,6 @@
 import { Transactions } from './utils';
 
-export const fetchAllNotes = async (auth_token: string) => {
+const fetchAllNotes = async (auth_token: string) => {
   let response = await window.fetch('/api/notes', {
     method: 'GET',
     credentials: 'include',
@@ -12,7 +12,7 @@ export const fetchAllNotes = async (auth_token: string) => {
   return await response.json();
 };
 
-export async function callProcessTransactionsApi(authToken: string, transactions: Transactions) {
+async function callProcessTransactionsApi(authToken: string, transactions: Transactions) {
   return await fetch("/api/notes/process_transactions", {
     method: "POST", credentials: 'include',
     headers: {
@@ -22,3 +22,10 @@ export async function callProcessTransactionsApi(authToken: string, transactions
     body: JSON.stringify(transactions)
   });
 }
+
+const serverApis = {
+  fetchAllNotes: fetchAllNotes,
+  callProcessTransactionsApi: callProcessTransactionsApi
+}
+
+export default serverApis;

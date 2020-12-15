@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
 import { syncChangesWithServer, newNoteIds } from './utils';
-import { fetchAllNotes } from "./serverApis";
+import serverApis from "./serverApis";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -92,7 +92,7 @@ export default function RootNotes() {
   // call an API to fetch notes once the component is first rendered
   useEffect(() => {
     if (auth?.user?.token) {
-      fetchAllNotes(auth?.user?.token)
+      serverApis.fetchAllNotes(auth?.user?.token)
       .then(json => {
         setNotes(json);
         setSyncedNotes(json);
