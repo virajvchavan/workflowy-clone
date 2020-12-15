@@ -127,7 +127,7 @@ export default function Notes(props: Props) {
             html={note.content} // innerHTML of the editable div
             disabled={false} // use true to disable edition
             onChange={(evt) => props.onNoteContentChange(deepIndex, sanitizeHtml(evt.target.value, sanitizeConf))} // handle innerHTML change
-            onBlur={(evt) => console.log("blurred")}
+            // onBlur={(evt) => console.log("blurred")}
             onKeyDown={onKeyDown}
           />
         </div>
