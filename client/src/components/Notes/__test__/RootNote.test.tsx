@@ -260,3 +260,22 @@ describe('Deleting notes', () => {
   // test("it should assign the children of a deleted note to the previous sibling of it ", async () => {
   // });
 });
+
+describe("snapshots", () => {
+  test("it should match snapshot for the initial render with some notes", async () => {
+    let notes = [
+      {"content":"one","collapsed":false,"id":"1","child_notes":[
+        {"content":"one one","collapsed":false,"id":"a","child_notes":[]},
+        {"content":"one two","collapsed":false,"id":"b","child_notes":[]}
+      ]},
+      {"content":"two","collapsed":false,"id":"2","child_notes":[]},
+      {"content":"three","collapsed":true,"id":"3","child_notes":[
+        {"content":"blah","collapsed":false,"id":"aasda","child_notes":[]}
+      ]}
+    ];
+    mockApiCalls(notes);
+    const { findByText, asFragment } = render(<RootNotes />);
+    await findByText("one");
+    expect(asFragment()).toMatchSnapshot()
+  });
+});
