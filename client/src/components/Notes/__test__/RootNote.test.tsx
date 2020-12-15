@@ -4,8 +4,25 @@ import React from "react";
 import RootNotes from '../RootNote';
 import * as utils from '../utils';
 import { SyncedDataResponse } from '../utils';
+import { NotesType } from '../Notes';
 
 afterEach(cleanup);
+
+let someNotes = [
+  {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
+  {"content":"two","child_notes":[],"collapsed":false,"id":"2"},
+  {"content":"three","child_notes":[],"collapsed":false,"id":"3"}
+];
+
+let emptySyncChangesResponse: SyncedDataResponse = {
+  status: "success",
+  newNoteIds: []
+}
+
+function mockApiCalls(notes: NotesType[]) {
+  jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
+  jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse);
+}
 
 jest.mock('../../../hooks/use-auth.tsx', () => ({
   useAuth: () => {
@@ -19,21 +36,9 @@ jest.mock('../../../hooks/use-auth.tsx', () => ({
   }
 }));
 
-let someNotes = [
-  {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
-  {"content":"two","child_notes":[],"collapsed":false,"id":"2"},
-  {"content":"three","child_notes":[],"collapsed":false,"id":"3"}
-];
-
-let emptySyncChangesResponse: SyncedDataResponse = {
-  status: "success",
-  newNoteIds: []
-}
-
 describe('Initial rendering', () => {
   test("it should have the Add btn", async () => {
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => someNotes );
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(someNotes);
     const { findByText } = render(<RootNotes />);
     let res = await findByText("+");
     expect(res).not.toBeNull();
@@ -60,8 +65,8 @@ describe('Initial rendering', () => {
         {"content":"four","child_notes":[],"collapsed":false,"id":"4"}
       ],"collapsed":false,"id":"3"}],"collapsed":false,"id":"2"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
+
     const { findByText } = render(<RootNotes />);
     let note1 = await findByText("one");
     expect(note1.id).toBe("note.0");
@@ -82,8 +87,8 @@ describe('Collapsing logic', () => {
     let notes = [
       {"content":"two","child_notes":[{"content":"three","child_notes": [],"collapsed":false,"id":"3"}],"collapsed":true,"id":"2"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
+
     const { queryByText, findByText } = render(<RootNotes />);
 
     await waitFor(() => findByText("two"));
@@ -100,8 +105,7 @@ describe('Adding new notes', () => {
     let notes = [
       {"content":"two","child_notes":[{"content":"three","child_notes": [],"collapsed":false,"id":"3"}],"collapsed":false,"id":"2"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let addBtn = await findByText("+");
@@ -114,8 +118,7 @@ describe('Adding new notes', () => {
     let notes = [
       {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note1 = await waitFor(() => findByText("one"));
@@ -128,8 +131,7 @@ describe('Adding new notes', () => {
     let notes = [
       {"content":"one","child_notes":[{"content":"two","child_notes": [],"collapsed":false,"id":"2"}],"collapsed":true,"id":"1"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note1 = await waitFor(() => findByText("one"));
@@ -142,8 +144,7 @@ describe('Adding new notes', () => {
     let notes = [
       {"content":"one","child_notes":[{"content":"two","child_notes": [],"collapsed":false,"id":"2"}],"collapsed":false,"id":"1"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note1 = await waitFor(() => findByText("one"));
@@ -158,8 +159,7 @@ describe('Adding new notes', () => {
       {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
       {"content":"two","child_notes":[],"collapsed":false,"id":"2"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note1 = await waitFor(() => findByText("one"));
@@ -176,8 +176,7 @@ describe('Tab key-press logic', () => {
       {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
       {"content":"two","child_notes":[],"collapsed":false,"id":"2"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note = await waitFor(() => findByText("two"));
@@ -193,8 +192,7 @@ describe('Tab key-press logic', () => {
     let notes = [
       {"content":"one","child_notes":[{"content":"two","child_notes":[],"collapsed":false,"id":"2"}],"collapsed":false,"id":"1"},
     ]
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(notes);
 
     const { findByTestId, findByText } = render(<RootNotes />);
     let note = await waitFor(() => findByText("two"));
@@ -207,13 +205,10 @@ describe('Tab key-press logic', () => {
   });
 });
 
+describe('Navigating between notes using up and down arrows', () => {
+  // add test for up and down arrow focus
+});
 
-// add test for up and down arrow focus
-
-// add test for tab behaviour
-  // - when the sibling before it exists
-  // - when the sibling before does not exist
-
-// add test for shift + tab behaviour
-
-// add test for deleting a note (backspace when empty)
+describe('Deleting notes', () => {
+  // add test for deleting a note (backspace when empty)
+});
