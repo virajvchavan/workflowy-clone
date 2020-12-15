@@ -1,4 +1,4 @@
-import { cleanup, render, waitFor, getByText, getByTestId } from '@testing-library/react';
+import { cleanup, render, waitFor, getByText, getByTestId, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from "react";
 import RootNotes from '../RootNote';
@@ -7,6 +7,11 @@ import { SyncedDataResponse } from '../utils';
 import { NotesType } from '../Notes';
 
 afterEach(cleanup);
+
+// Note: writing tests for any components that use content-editable is not well supported right now
+// See: https://github.com/testing-library/user-event/issues/230
+// Some possible test cases that are missing because of this issue are: 
+// - keyboard navigation testing, - anything that requires typing in content-editable component
 
 let someNotes = [
   {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
@@ -205,10 +210,28 @@ describe('Tab key-press logic', () => {
   });
 });
 
+// TODO
+// stuck bcause triggering up & down arrows using user-event is not supported for content-editable elements right now
+// content-editable
 describe('Navigating between notes using up and down arrows', () => {
-  // add test for up and down arrow focus
+  // test("it should change the focus to the correct note when down arrow key is pressed when note has no children", async () => {
+  // });
+
+  // test("it should change the focus to the correct note when down arrow key is pressed when note has collapsed children", async () => {
+  // });
+
+  // test("it should change the focus to the correct note when up arrow key is pressed when note has siblings before it", async () => {
+  // });
+
+  // test("it should change the focus to the correct note when up arrow key is pressed when it's the first child", async () => {
+  // });
 });
 
+// TODO
 describe('Deleting notes', () => {
-  // add test for deleting a note (backspace when empty)
+  // test("it should delete the note when backspace is pressed when the note is empty", async () => {
+  // });
+
+  // test("it should assign the children of a deleted note to the previous sibling of it ", async () => {
+  // });
 });
