@@ -1,3 +1,4 @@
+import { callProcessTransactionsApi } from './serverApis';
 import { NotesType } from './Notes';
 
 let jsonDiff = require('jsondiffpatch').create({
@@ -22,7 +23,7 @@ type AddedTransaction = {
   indexPath: number[]
 }
 
-interface Transactions {
+export interface Transactions {
   added: Array<AddedTransaction>,
   deleted:  Array<{
     id: string
@@ -37,16 +38,16 @@ interface Transactions {
   }>
 }
 
-  // indices are the sequence in which to access a note in the state
-  const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
-    let noteToUpdate = newNotes[indices[0]];
-    indices.forEach((index, i) => {
-      if (i !== 0) {
-        noteToUpdate = noteToUpdate.child_notes[index];
-      }
-    });
-    return noteToUpdate;
-  }
+// indices are the sequence in which to access a note in the state
+const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
+  let noteToUpdate = newNotes[indices[0]];
+  indices.forEach((index, i) => {
+    if (i !== 0) {
+      noteToUpdate = noteToUpdate.child_notes[index];
+    }
+  });
+  return noteToUpdate;
+}
 
 // 'changes' are an instance of response by https://github.com/benjamine/jsondiffpatch
 // to understand the format of changes better, read this: https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
@@ -150,14 +151,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
   transactions = correctDeletedTransactions(transactions);
 
-  let response = await fetch("/api/notes/process_transactions", {
-    method: "POST", credentials: 'include',
-    headers: {
-      'Authorization': "Bearer " + authToken,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(transactions)
-  });
+  let response = await callProcessTransactionsApi(authToken, transactions);
 
   if (response.status === 200) {
     let result = await response.json();
@@ -190,14 +184,3 @@ const mergeTransactionObjects = (t1: Transactions, t2: Transactions): Transactio
   }
 }
 
-export const fetchAllNotes = async (auth_token: string) => {
-  let response = await window.fetch('/api/notes', {
-    method: 'GET',
-    credentials: 'include',
-    headers: {
-        'Authorization': "Bearer " + auth_token,
-        'Content-Type': 'application/json'
-    }
-  });
-  return await response.json();
-}

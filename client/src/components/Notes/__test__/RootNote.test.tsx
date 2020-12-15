@@ -1,9 +1,9 @@
-import { cleanup, render, waitFor, getByText, getByTestId, act, fireEvent } from '@testing-library/react';
+import { cleanup, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from "react";
 import RootNotes from '../RootNote';
 import * as utils from '../utils';
-import { SyncedDataResponse } from '../utils';
+import * as serverApis from '../serverApis';
 import { NotesType } from '../Notes';
 
 afterEach(cleanup);
@@ -19,14 +19,9 @@ let someNotes = [
   {"content":"three","child_notes":[],"collapsed":false,"id":"3"}
 ];
 
-let emptySyncChangesResponse: SyncedDataResponse = {
-  status: "success",
-  newNoteIds: []
-}
-
 function mockApiCalls(notes: NotesType[]) {
-  jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
-  jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse);
+  jest.spyOn(serverApis, 'fetchAllNotes').mockImplementation(async () => notes);
+  jest.spyOn(serverApis, 'callProcessTransactionsApi').mockImplementation(async () => new Response("[]", {status: 200, headers: {responseType: "application/json"}}));
 }
 
 jest.mock('../../../hooks/use-auth.tsx', () => ({
@@ -42,7 +37,14 @@ jest.mock('../../../hooks/use-auth.tsx', () => ({
 }));
 
 describe('Initial rendering', () => {
-  test("it should have the Add btn", async () => {
+  test("it should display the loading text before making the api call", async () => {
+    mockApiCalls(someNotes);
+    const { findByText } = render(<RootNotes />);
+    let res = await findByText("Loading...");
+    expect(res).not.toBeNull();
+  });
+
+  test("it should display the Add(+) btn", async () => {
     mockApiCalls(someNotes);
     const { findByText } = render(<RootNotes />);
     let res = await findByText("+");
@@ -50,8 +52,7 @@ describe('Initial rendering', () => {
   });
 
   test("it should render initial notes correctly when max level is 1", async () => {
-    jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => someNotes );
-    jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+    mockApiCalls(someNotes);
     const { findByText } = render(<RootNotes />);
     let note1 = await findByText("one");
     expect(note1.id).toBe("note.0");
@@ -117,6 +118,22 @@ describe('Adding new notes', () => {
     userEvent.click(addBtn);
     let note = await findByTestId("noterow.1");
     expect(note).not.toBeNull();
+  });
+
+  test("it should call syncChangesWithServer after 4 seconds of updating notes", async () => {
+    let notes = [
+      {"content":"two","child_notes":[{"content":"three","child_notes": [],"collapsed":false,"id":"3"}],"collapsed":false,"id":"2"},
+    ]
+    mockApiCalls(notes);
+
+    const { findByText, findByTestId } = render(<RootNotes />);
+    let addBtn = await findByText("+");
+
+    userEvent.click(addBtn);
+    await findByTestId("noterow.1");
+    setTimeout(() => {
+      expect(utils.syncChangesWithServer).toHaveBeenCalled();
+    }, 4000);
   });
 
   test("it should add a new note at root level when enter key is pressed on a root note with no child notes", async () => {
@@ -211,8 +228,8 @@ describe('Tab key-press logic', () => {
 });
 
 // TODO
-// stuck bcause triggering up & down arrows using user-event is not supported for content-editable elements right now
-// content-editable
+// stuck bcause triggering the 'up' & 'down' arrows by using 'user-event' is not supported for content-editable elements right now
+// https://github.com/testing-library/user-event/issues/230
 describe('Navigating between notes using up and down arrows', () => {
   // test("it should change the focus to the correct note when down arrow key is pressed when note has no children", async () => {
   // });

@@ -4,7 +4,8 @@ import Notes, { NotesType } from "./Notes";
 import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
-import { syncChangesWithServer, newNoteIds, fetchAllNotes } from './utils';
+import { syncChangesWithServer, newNoteIds } from './utils';
+import { fetchAllNotes } from "./serverApis";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
