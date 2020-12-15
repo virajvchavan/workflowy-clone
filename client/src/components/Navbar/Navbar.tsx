@@ -41,8 +41,8 @@ export default function Navbar() {
               Moar
               </Link>
           </Typography>
-          {auth?.user ? <Button color="inherit" onClick={() => auth?.signout(() => history.push("/login"))}>Logout</Button> : 
-            <Button color="inherit" onClick={() => history.push("/login")}>Login</Button>
+          {auth?.user ? <Button role="button" color="inherit" onClick={() => auth?.signout(() => history.push("/login"))}>Logout</Button> : 
+            <Button role="button" color="inherit" onClick={() => history.push("/login")}>Login</Button>
           }
         </Toolbar>
       </AppBar>
