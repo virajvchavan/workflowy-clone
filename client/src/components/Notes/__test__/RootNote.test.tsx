@@ -183,7 +183,7 @@ test("it should add a new note at the correct index when enter key pressed in so
   jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
   jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
 
-  const { findByTestId, findByText, getByText, getByTestId } = render(<RootNotes />);
+  const { findByTestId, findByText } = render(<RootNotes />);
   let note1 = await waitFor(() => findByText("one"));
   userEvent.type(note1, '{enter}');
 
@@ -191,11 +191,43 @@ test("it should add a new note at the correct index when enter key pressed in so
   expect(note.querySelector("pre")).toHaveTextContent("two");
 });
 
-// add test for adding a new note for some parent
+test("it should change the parent of a note if tab is pressed and the note has a sibling before it", async () => {
+  let notes = [
+    {"content":"one","child_notes":[],"collapsed":false,"id":"1"},
+    {"content":"two","child_notes":[],"collapsed":false,"id":"2"},
+  ]
+  jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
+  jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
 
-// add test for adding a new note as the first child
-// as the last child
-// as a middle chlid
+  const { findByTestId, findByText } = render(<RootNotes />);
+  let note = await waitFor(() => findByText("two"));
+  note.focus();
+  expect(note).toHaveFocus();
+  userEvent.tab();
+
+  let newNote = await findByTestId("noterow.0.0");
+  expect(newNote.querySelector("pre")).toHaveTextContent("two");
+});
+
+test("it should change the parent of a note if shift+tab is pressed and the note has a parent", async () => {
+  let notes = [
+    {"content":"one","child_notes":[{"content":"two","child_notes":[],"collapsed":false,"id":"2"}],"collapsed":false,"id":"1"},
+  ]
+  jest.spyOn(utils, 'fetchAllNotes').mockImplementation(async () => notes);
+  jest.spyOn(utils, 'syncChangesWithServer').mockImplementation(async () => emptySyncChangesResponse );
+
+  const { findByTestId, findByText } = render(<RootNotes />);
+  let note = await waitFor(() => findByText("two"));
+  note.focus();
+  expect(note).toHaveFocus();
+  userEvent.tab({ shift : true });
+
+  let newNote = await findByTestId("noterow.1");
+  expect(newNote.querySelector("pre")).toHaveTextContent("two");
+});
+
+
+// add test for up and down arrow focus
 
 // add test for tab behaviour
   // - when the sibling before it exists
