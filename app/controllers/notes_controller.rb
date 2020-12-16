@@ -43,7 +43,7 @@ class NotesController < ApiController
   # this action can be improved later: Send newly added ids as soon as possible and process the updates and delete_children_tree in background
   def process_transactions
     params[:deleted].each do |transaction|
-      if transaction[:id] && !transaction[:id].starts_with?("temp")
+      if transaction[:id] && !transaction[:id].to_s.starts_with?("temp")
         Note.find(transaction[:id]).destroy
       end
     end

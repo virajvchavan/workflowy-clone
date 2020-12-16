@@ -113,7 +113,10 @@ class Note
   def self.get_notes_as_arrays(notes)
     res = []
     notes.keys.each do |key|
-      res.push(notes[key].merge(id: key, child_notes: get_notes_as_arrays(notes[key][:child_notes])))
+      res.push(notes[key].merge(
+        id: key,
+        child_notes: get_notes_as_arrays(notes[key][:child_notes])
+      ))
     end
     res
   end
