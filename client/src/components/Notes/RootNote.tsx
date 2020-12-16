@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/use-auth';
 import produce from 'immer';
 import { useDebounce } from 'use-debounce';
 import { syncChangesWithServer, newNoteIds } from './utils';
+import serverApis from "./serverApis";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -90,21 +91,15 @@ export default function RootNotes() {
 
   // call an API to fetch notes once the component is first rendered
   useEffect(() => {
-    window.fetch('/api/notes', {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-          'Authorization': "Bearer " + auth?.user?.token,
-          'Content-Type': 'application/json'
-      }
-    })
-    .then(response => response.json())
-    .then(json => {
-      setNotes(json);
-      setSyncedNotes(json);
-      setLoading(false);
-    })
-    .catch(error => console.log(error));
+    if (auth?.user?.token) {
+      serverApis.fetchAllNotes(auth?.user?.token)
+      .then(json => {
+        setNotes(json);
+        setSyncedNotes(json);
+        setLoading(false);
+      })
+      .catch(error => console.log(error));
+    }
   }, [auth]);
 
   // update fields for a specific note

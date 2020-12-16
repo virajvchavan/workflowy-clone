@@ -1,3 +1,4 @@
+import serverApis from './serverApis';
 import { NotesType } from './Notes';
 
 let jsonDiff = require('jsondiffpatch').create({
@@ -22,7 +23,7 @@ type AddedTransaction = {
   indexPath: number[]
 }
 
-interface Transactions {
+export interface Transactions {
   added: Array<AddedTransaction>,
   deleted:  Array<{
     id: string
@@ -37,16 +38,16 @@ interface Transactions {
   }>
 }
 
-  // indices are the sequence in which to access a note in the state
-  const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
-    let noteToUpdate = newNotes[indices[0]];
-    indices.forEach((index, i) => {
-      if (i !== 0) {
-        noteToUpdate = noteToUpdate.child_notes[index];
-      }
-    });
-    return noteToUpdate;
-  }
+// indices are the sequence in which to access a note in the state
+const getNoteForIndices = (newNotes: NotesType[], indices: number[]) => {
+  let noteToUpdate = newNotes[indices[0]];
+  indices.forEach((index, i) => {
+    if (i !== 0) {
+      noteToUpdate = noteToUpdate.child_notes[index];
+    }
+  });
+  return noteToUpdate;
+}
 
 // 'changes' are an instance of response by https://github.com/benjamine/jsondiffpatch
 // to understand the format of changes better, read this: https://github.com/benjamine/jsondiffpatch/blob/master/docs/deltas.md
@@ -70,7 +71,7 @@ const generateTransactions = (key: string, changes: JSON, indexes: Array<number>
     if (Array.isArray(changes)) {
       let parent_id: string = "root";
       if (indexes.length > 0) {
-        console.log("getting parent from: " + indexes);
+        // console.log("getting parent from: " + indexes);
         parent_id = getNoteForIndices(newNotes, indexes).id;
       }
       transactions.added.push({
@@ -134,7 +135,7 @@ export interface newNoteIds {
   note_id: string
 }
 
-interface SyncedDataResponse {
+export interface SyncedDataResponse {
   status: "success" | "error" | "no_diff",
   newNoteIds?: newNoteIds[]
 }
@@ -142,7 +143,6 @@ interface SyncedDataResponse {
 // Finds the diff beween syncedNotes and newNotes, generates transactions, and sends them to the server
 // Returns ids for newly added notes
 export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: NotesType[], authToken: string): Promise<SyncedDataResponse> => {
-  console.log("calling the api");
   let changes = jsonDiff.diff(syncedNotes, newNotes);
 
   if (!changes) return { status: "no_diff" };
@@ -150,14 +150,7 @@ export const syncChangesWithServer = async (newNotes: NotesType[], syncedNotes: 
   let transactions = createTransactionsFromChanges(changes, [], newNotes);
   transactions = correctDeletedTransactions(transactions);
 
-  let response = await fetch("/api/notes/process_transactions", {
-    method: "POST", credentials: 'include',
-    headers: {
-      'Authorization': "Bearer " + authToken,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(transactions)
-  });
+  let response = await serverApis.callProcessTransactionsApi(authToken, transactions);
 
   if (response.status === 200) {
     let result = await response.json();
@@ -189,3 +182,4 @@ const mergeTransactionObjects = (t1: Transactions, t2: Transactions): Transactio
     move_same_parent: [...t1.move_same_parent, ...t2.move_same_parent]
   }
 }
+
