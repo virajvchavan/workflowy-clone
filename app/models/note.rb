@@ -79,6 +79,7 @@ class Note
     new_note_ids
   end
 
+  # returns notes for a user in a format that the client apps can easily use
   def self.root_notes_json(user_id)
     notes = User.find(user_id).notes.order_by(path: :asc, order: :asc)
 
@@ -106,6 +107,42 @@ class Note
       end
     end
     get_notes_as_arrays(json)
+  end
+
+  def self.apply_delete_transactions(transactions)
+    # todo: use bulk delete instead of individual deletes
+    transactions.each do |transaction|
+      if transaction[:id] && !transaction[:id].to_s.starts_with?("temp")
+        Note.find(transaction[:id]).destroy
+      end
+    end
+  end
+
+  def self.apply_update_transactions(transactions)
+    transactions.each do |transaction|
+      note = Note.find(transaction[:id])
+      fields_to_update = {}
+      transaction[:fields].keys.each do |key|
+        fields_to_update[key] = transaction[:fields][key]
+      end
+      note.update(fields_to_update)
+    end
+  end
+
+  def self.apply_add_transactions(transactions, user_id)
+    new_note_ids = []
+    transactions.each do |transaction|
+      add_new_child_tree(
+        user_id,
+        transaction[:parent_id],
+        transaction[:index],
+        transaction[:id],
+        transaction[:fields],
+        transaction[:indexPath],
+        new_note_ids
+      )
+    end
+    new_note_ids
   end
 
   private

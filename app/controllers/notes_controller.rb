@@ -42,34 +42,11 @@ class NotesController < ApiController
   # POST /notes/process_transactions
   # this action can be improved later: Send newly added ids as soon as possible and process the updates and delete_children_tree in background
   def process_transactions
-    params[:deleted].each do |transaction|
-      if transaction[:id] && !transaction[:id].to_s.starts_with?("temp")
-        Note.find(transaction[:id]).destroy
-      end
-    end
+    Note.apply_delete_transactions(params[:deleted])
+    Note.apply_update_transactions(params[:updated])
+    new_note_ids = Note.apply_add_transactions(params[:added], @current_user.id)
 
-    params[:updated].each do |transaction|
-      note = Note.find(transaction[:id])
-      fields_to_update = {}
-      transaction[:fields].keys.each do |key|
-        fields_to_update[key] = transaction[:fields][key]
-      end
-      note.update(fields_to_update)
-    end
-
-    new_note_ids = []
-    params[:added].each do |transaction|
-      Note.add_new_child_tree(
-        @current_user.id,
-        transaction[:parent_id],
-        transaction[:index],
-        transaction[:id],
-        transaction[:fields],
-        transaction[:indexPath],
-        new_note_ids
-      )
-    end
-
+    # if there are any ghost children remaining (notes with a non-existing parent), delete those
     params[:deleted].each do |note_id|
       Note.delete_children_tree(note_id)
     end
