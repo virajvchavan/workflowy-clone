@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class NotesController < ApiController
   before_action :authenticate_request!
 
@@ -7,7 +9,8 @@ class NotesController < ApiController
   end
 
   # POST /notes/process_transactions
-  # this action can be improved later: Send newly added ids as soon as possible and process the updates and delete_children_tree in background
+  # this action can be improved later:
+  #  -> Send newly added ids as soon as possible and process the updates and delete_children_tree in background
   def process_transactions
     Note.apply_delete_transactions(params[:deleted])
     Note.apply_update_transactions(params[:updated])

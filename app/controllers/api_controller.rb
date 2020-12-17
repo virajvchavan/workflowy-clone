@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ApiController < ActionController::API
   require 'json_web_token'
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User
   include Mongoid::Document
   include ActiveModel::SecurePassword
@@ -9,7 +11,7 @@ class User
 
   field :password_digest, type: String
 
-  has_many :notes
+  has_many :notes, dependent: :destroy
 
   validates :email, presence: true
   index({ email: 1 }, { unique: true, name: 'email_index' })
