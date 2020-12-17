@@ -1,5 +1,5 @@
 class UsersController < ApiController
-  before_action :authenticate_request!, except: [:create, :login]
+  before_action :authenticate_request!, except: %i[create login]
 
   def login
     user = User.where(email: user_params[:email].to_s.downcase).find_first
@@ -14,7 +14,7 @@ class UsersController < ApiController
 
   # client can call this to make sure the jwt token it has has not expired
   def auto_login
-    render json: { status: "logged_in" }
+    render json: { status: 'logged_in' }
   end
 
   # POST /users
@@ -30,13 +30,14 @@ class UsersController < ApiController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_user
-      @user = User.find(params[:id])
-    end
 
-    # Only allow a trusted parameter "white list" through.
-    def user_params
-      params.require(:user).permit(:email, :password, :name)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_user
+    @user = User.find(params[:id])
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def user_params
+    params.require(:user).permit(:email, :password, :name)
+  end
 end

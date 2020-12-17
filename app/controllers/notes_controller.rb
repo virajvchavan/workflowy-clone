@@ -18,7 +18,6 @@ class NotesController < ApiController
       Note.delete_children_tree(note_id)
     end
 
-    render json: { status: "success", new_ids: new_note_ids }
+    render json: { status: 'success', new_ids: new_note_ids }
   end
-
 end

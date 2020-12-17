@@ -11,11 +11,10 @@ class User
 
   has_many :notes
 
-  validates :email, :presence => true
-  index({ email: 1 }, { unique: true, name: "email_index" })
+  validates :email, presence: true
+  index({ email: 1 }, { unique: true, name: 'email_index' })
 
   def id
     _id.to_s
   end
-
 end
