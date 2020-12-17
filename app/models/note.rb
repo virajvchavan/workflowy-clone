@@ -137,6 +137,8 @@ class Note
   # move_left: if true, decrements indexes by 1, if false, increments by 1
   def self.correct_orders_for_siblings(user_id, path, index, move_left)
     siblings = Note.where(user_id: user_id, path: path, 'order' => {'$gte' => index})
+
+    # make sure you're not violating the unique index on :path, :order when updating the :order for any note
     siblings.public_send(move_left ? :each : :reverse_each) do |sibling|
       if sibling
         new_order = move_left ? sibling.order - 1 : sibling.order + 1
