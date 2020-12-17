@@ -1,2 +1,2 @@
 web: sh -c 'cd ./client/ && PORT=3000 npm start'
-api: PORT=3001 bundle exec rails s
+api: sh -c 'cd ./server/ PORT=3001 bundle exec rails s`
