@@ -13,7 +13,7 @@ class Note
 
   index({ user_id: 1, path: 1, order: 1 }, { unique: true, background: true })
 
-  before_destroy :remove_from_parent
+  after_destroy :remove_from_parent
 
   def child_notes_json
     # todo: can be used when frontend requests data for any non-root note and its tree
@@ -24,12 +24,7 @@ class Note
   # Also, we're not deleting any of its children because its the client's(React app's) responsibility...
   # ...to assign them new parents or delete them separately
   def remove_from_parent
-    siblings = Note.where(user_id: self.user_id, path: self.path, 'order' => {'$gt' => self.order})
-    siblings.each do |sibling|
-      if sibling
-        sibling.update(order: sibling.order - 1)
-      end
-    end
+    Note.correct_orders_for_siblings(self.user_id, self.path, self.order, true)
   end
 
   # Assuming the note_id we're passing does not exist and was previously deleted
@@ -45,9 +40,8 @@ class Note
   def self.add_new_child_tree(user_id, parent_id, index, note_id, fields, indexPath, new_note_ids)
     note_path = get_note_path(parent_id)
     note_fields = get_note_fields_for(index, note_path, fields)
+    correct_orders_for_siblings(user_id, note_path, index, false)
     current_note = add_or_update_note(note_id, note_fields, user_id, indexPath, new_note_ids)
-
-    correct_orders_for_siblings(user_id, note_path, index, false, current_note.id)
 
     # recursively call this fn if fields has any child_notes
     if fields[:child_notes] && fields[:child_notes].length > 0
@@ -141,10 +135,10 @@ class Note
   # path: all siblings have the same path
   # order: the siblings which have order greater than this will be affected
   # move_left: if true, decrements indexes by 1, if false, increments by 1
-  def self.correct_orders_for_siblings(user_id, path, index, move_left, note_id_to_skip)
+  def self.correct_orders_for_siblings(user_id, path, index, move_left)
     siblings = Note.where(user_id: user_id, path: path, 'order' => {'$gte' => index})
-    siblings.each do |sibling|
-      if sibling && sibling.id != note_id_to_skip
+    siblings.public_send(move_left ? :each : :reverse_each) do |sibling|
+      if sibling
         new_order = move_left ? sibling.order - 1 : sibling.order + 1
         sibling.update(order: new_order)
       end
