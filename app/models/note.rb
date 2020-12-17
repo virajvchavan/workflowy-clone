@@ -11,10 +11,12 @@ class Note
   validates :order, :presence => true
   validates :path, :presence => true
 
+  index({ user_id: 1, path: 1, order: 1 }, { unique: true, background: true })
+
   before_destroy :remove_from_parent
 
   def child_notes_json
-    # todo: can be used when frontend requests data for only one note and its tree
+    # todo: can be used when frontend requests data for any non-root note and its tree
     []
   end
 
