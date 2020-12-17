@@ -35,7 +35,9 @@ RSpec.describe "Notes API", type: :request do
       note2 = @user.notes.create(content: "hey2", collapsed: false, path: "/#{note1.id.to_s}/", order: 0)
       note3 = @user.notes.create(content: "hey3", collapsed: false, path: "/#{note1.id.to_s}/", order: 1)
       note5 = @user.notes.create(content: "hey.1", collapsed: false, path: "/", order: 1)
+
       get '/api/notes', headers: { "Authorization" => "Bearer #{jwt}" }
+
       expect(json.map {|i| i.deep_symbolize_keys}).to eq([
         {
           "id": note1.id.to_s,
@@ -80,13 +82,37 @@ RSpec.describe "Notes API", type: :request do
         deleted: [],
         updated: []
       }
+
       post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
       expect(response).to have_http_status(200)
-      @user.reload
-      user_notes = @user.notes
+      user_notes = @user.reload.notes
       expect(user_notes.count).to eq(1)
       new_note = user_notes.first
       expect(new_note.content).to eq("two")
+    end
+
+    it 'returns newly created note_ids in the response if added notes have temp_ids' do
+      jwt = login_user(@user)
+      transactions = {
+        added: [{
+          id: "temp_id",
+          index: 1,
+          parent_id: "root",
+          fields: { content: "two", collapsed: false, id: "2", child_notes: [] },
+          indexPath: [1]
+        }],
+        deleted: [],
+        updated: []
+      }
+
+      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
+      expect(response).to have_http_status(200)
+      data = JSON.parse(response.body)
+      expect(data).to include('status', 'new_ids')
+      expect(data['status']).to eq('success')
+      expect(data['new_ids'].length).to eq(1)
     end
 
     it 'correct "order" field for siblings for a "created" transaction with parent root' do
@@ -105,7 +131,9 @@ RSpec.describe "Notes API", type: :request do
         deleted: [],
         updated: []
       }
+
       post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
       expect(response).to have_http_status(200)
       @user.reload
 
@@ -131,9 +159,10 @@ RSpec.describe "Notes API", type: :request do
         deleted: [],
         updated: []
       }
-      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
-      expect(response).to have_http_status(200)
 
+      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
+      expect(response).to have_http_status(200)
       expect(note3.reload.order).to eq(2)
       expect(note4.reload.order).to eq(3)
       expect(Note.find_by(content: "randomNote1").order).to eq(1)
@@ -150,7 +179,9 @@ RSpec.describe "Notes API", type: :request do
         deleted: [{id: note.id.to_s}],
         updated: []
       }
+
       post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
       expect(response).to have_http_status(200)
       @user.reload
       expect(@user.notes.where(id: note.id).length).to eq(0)
@@ -168,9 +199,10 @@ RSpec.describe "Notes API", type: :request do
         deleted: [{id: note2.id.to_s}],
         updated: []
       }
-      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
-      expect(response).to have_http_status(200)
 
+      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
+      expect(response).to have_http_status(200)
       expect(note3.reload.order).to eq(1)
       expect(note4.reload.order).to eq(2)
     end
@@ -188,9 +220,10 @@ RSpec.describe "Notes API", type: :request do
         deleted: [{id: note3.id.to_s}],
         updated: []
       }
-      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
-      expect(response).to have_http_status(200)
 
+      post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
+      expect(response).to have_http_status(200)
       expect(note4.reload.order).to eq(1)
       expect(note5.reload.order).to eq(2)
     end
@@ -207,10 +240,10 @@ RSpec.describe "Notes API", type: :request do
         fields: { content: "heyheyhey", collapsed: true }
       }]
     }
-    post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
-    expect(response).to have_http_status(200)
 
-    user_notes = @user.notes
+    post '/api/notes/process_transactions', headers: { "Authorization" => "Bearer #{jwt}", 'Content-Type': 'application/json' }, params: transactions.to_json
+
+    expect(response).to have_http_status(200)
     note1.reload
     expect(note1.content).to eq('heyheyhey')
     expect(note1.collapsed).to eq(true)
