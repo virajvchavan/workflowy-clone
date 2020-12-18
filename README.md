@@ -66,35 +66,35 @@ Deployed here: https://moar-notes.herokuapp.com
 
 ## How upcoming features can be implemented:
 > Most of these require changes in the frontend and minimal changes on the server
-1. Zooming in on a specific note:
+1. **Zooming in on a specific note**
     - We should be able to open any bullet point on its own. Changes will be in the frontend, minimal changes in the server. The server already has the support for returning child_tree for any note.
-2. Undoing & Redoing capabilities
+2. **Undoing & Redoing capabilities**
     - Can be handled entirely on the frontend. Can store user's actions in react state and use it to undo & redo changes. The existing logic for diffing and creating transactions will not change.
-3. Tagging
+3. **Tagging**
     - The current architecure can be extended to add a new field and make changes to the frontend to show tags for a note and show all notes for a tag. (Not sure if the list of notes for a tag should be fetched from local state or from an server API)
-4. Searching
+4. **Searching**
     - Can create an API on the server that can do fuzzy search on all the content in the notes.
     - Can use a full-text search engine like ElasticSearch to index the content. (MogoDB's text-search may work as well, need to research)
     - The frontend app needs to come up with a way to show the search result from the existing state.
-5. Drag and drop notes
+5. **Drag and drop notes**
     - Can use some library to handle drag and drop UX, and the handler will change the react state for notes. No other changes are expected.
-6. Paste outline notes copied from somewhere else and preserve the structure
+6. **Paste outline notes copied from somewhere else and preserve the structure**
     - Can attach an `onPaste` handler which will parse the pasted data, and understand the structure of the data and modify the react state.
-7. Select and copy multiple notes with its structure
+7. **Select and copy multiple notes with its structure**
     - Add handlers to select multiple notes, and a way to generate structured outline data from it.
-8. Warn user when she's closing tab before all changes are synced.
-9. `Expand All` & `Collapse All` buttons
-9. Offline support
+8. **Warn user when she's closing tab before all changes are synced**
+9. **`Expand All` & `Collapse All` buttons**
+9. **Offline support**
     - Can make it Progressive Web App.
     - Need to store the state locally. `IndexedDB` can be a good option to store it.
-10. Real-time synchronization between multiple instances of clients
+10. **Real-time synchronization between multiple instances of clients**
     - Can use Websockets to make it work.
     - The current transactions pattern should make it easy to sync the data reliably.
-11. Adding other authentication methods using OAuth2
-12. Optimizing for large amounts of data
-13. Making certain page public
+11. **Adding other authentication methods using OAuth2**
+12. **Optimizing for large amounts of data**
+13. **Making certain page public**
     - Easy to implement. Can add caching for these notes
-14. Better support for mobile phone
+14. **Better support for mobile phone**
     - Can add extra buttons that'll stick at the bottom for indending the notes left & right
 
 ## Why didn't I use Redux, GraphQL, or some other tech that could've suited better?
