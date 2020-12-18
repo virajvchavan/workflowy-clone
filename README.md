@@ -25,7 +25,7 @@ Deployed here: https://moar-notes.herokuapp.com
 - `Ctrl` + `U` -> Make the text Underlined
 
 ## **Architecture overview**
-### **Server**
+### **Backend**
 - A User has_many Notes
 - Notes Model
     - To maintain a tree-like structure between the notes, I'm using a pattern called **Materialized Paths** (http://learnmongodbthehardway.com/schema/categoryhierarchy/)
@@ -36,7 +36,7 @@ Deployed here: https://moar-notes.herokuapp.com
     - To maintain the integrity of sequencing and improve performance a MongoDB `unique index` is added for `{ user_id: 1, path: 1, order: 1 }`
 - Authentication
     - Password based authentication
-    - Uses `has_secure_password` by Rails for storing password
+    - Uses `has_secure_password` by Rails for storing password with bcrypt encryption
     - Sends a Json Web Token to the client
     - The client send the JWT with each api call
 - Sever APIs
@@ -93,7 +93,7 @@ Deployed here: https://moar-notes.herokuapp.com
 11. **Adding other authentication methods using OAuth2**
 12. **Optimizing for large amounts of data**
 13. **Making certain page public**
-    - Easy to implement. Can add caching for these notes
+    - Easy to implement. Can add caching for these notes as well.
 14. **Better support for mobile phone**
     - Can add extra buttons that'll stick at the bottom for indending the notes left & right
 
@@ -101,7 +101,7 @@ Deployed here: https://moar-notes.herokuapp.com
 - While Redux/GraphQL would have been a great choices for the project, due to lock of time, my experience with both was limited, and using them would've meant spending more time learning these instead of implementing the features of the app.
 - Hence I avoided using any tech that I was not already proficient in to minimize the time spent in learning it / fixing bugs.
 
-## Automated Testing
+## Automated Testing Approach
 - Using `react-testing-library` with `jest` for unit and integration tests.
 - Most of the code for the core features is covered by integrated tests.
 - Didn't do a lot of unit tests due to a lack of time, but if this project was to be used by real users, I would add some essential unit tests before making it live.

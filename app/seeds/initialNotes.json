@@ -17,5 +17,173 @@
         { "content": "<b>Ctrl</b> + <b>U</b> -> Make the text <u>underlined</u>.", "collapsed": false }
       ] }
     ]
+  },
+  {
+    "content": "How this app was built",
+    "collapsed": true,
+    "child_notes": [
+      {
+        "content": "Tech stack",
+        "collapsed": true,
+        "child_notes": [
+          { "content": "Backend: A Ruby on Rails REST API" },
+          { "content": "Database: MongoDB with the Mongoid ORM" },
+          { "content": "Frontend: A React App used with TypeScript" },
+          { "content": "Deployment: React code is built & copied to the Rails /public folder & deployed on a single server using Heroku." }
+        ]
+      },
+      {
+        "content": "Architecture Overview",
+        "collapsed": true,
+        "child_notes": [
+          {
+            "content": "Backend",
+            "collapsed": true,
+            "child_notes": [
+              {
+                "content": "Notes Model",
+                "collapsed": true,
+                "child_notes": [
+                  { "content": "To maintain a tree-like structure between the notes, I'm using a pattern called **Materialized Paths** (http://learnmongodbthehardway.com/schema/categoryhierarchy/)" },
+                  { "content": "Each note has a field called `path` which stores the path of ids of all its parents." },
+                  { "content": "To maintain the sequence of notes, we're using a number field calleed `order`" },
+                  { "content": "This allows us to fetch all notes of a user in a single query." },
+                  { "content": "We can also do queries like fetching the subtree of any note in a single query." },
+                  { "content": "To maintain the integrity of sequencing and improve performance a MongoDB `unique index` is added for `{ user_id: 1, path: 1, order: 1 }`" }
+                ]
+              },
+              {
+                "content": "Authentication",
+                "collapsed": true,
+                "child_notes": [
+                  { "content": "Password pased authentication" },
+                  { "content": "Uses `has_secure_password` by Rails for storing password with bcrypt encryption" },
+                  { "content": "Server sends a Json Web Token to the client" },
+                  { "content": "The client send the JWT with each api call" }
+                ]
+              },
+              {
+                "content": "Server APIs",
+                "collapsed": true,
+                "child_notes": [
+                  { "content": "POST /users -> register a user, returns an auth_token" },
+                  { "content": "POST /users/login -> login a user, returns an auth_token" },
+                  { "content": "GET /users/auto_login -> checks if an auth_token sent with the api call is valid" },
+                  { "content": "GET /notes -> returns notes in the form of a nested json for the authenticated user" },
+                  { "content": "POST /notes/process_transactions -> applies the transactions sent by the client on the database & returns newly created note_ids" }
+                ]
+              }
+            ]
+          },
+          {
+            "content": "Frontend",
+            "collapsed": true,
+            "child_notes": [
+              { "content": "The core component is `RootNote`. It has all the core logic to handle various features." },
+              { "content": "The component called `Note` has the bare minumum each single note needs. It is rendered for every single bullet point." },
+              { "content": "The `serverApis.tsx` handles the communication with the user." },
+              { "content": "The utils.tsx module deals with creating transactions for changes made by the user." },
+              { "content": "Changes to the server are sent when the user hasn't typed anything for 4 seconds." },
+              { "content": "In the state, we store `sycnedNotes` & `notes`.", "child_notes": [
+                { "content": "`notes` has the state sycned with what user types at all time" },
+                { "content": "`sycnedNotes` has the notes that are in sync with the server" },
+                { "content": "When the user hasn't typed anything for 4 seconds, the two are compared to find the changes to be sent to the server." }
+              ] },
+              { "content": "The changes are sent to the server in the form of transactions. Transactions may be of type `added`, `updated`, `deleted`, or `moved`", "child_notes": [
+                { "content": "The server returns the ids for the newly created notes, which are then put in the `notes` & `syncedNotes`." },
+                { "content": "`sycnedNotes` are updated every time the api is called and gives 200 status response." }
+              ] },
+              { "content": "The libraries used", "child_notes": [
+                { "content": "`immer` for ease with immutable objects" },
+                { "content": "`jsondiffpatch` for comparing the old and the new state" },
+                { "content": "`react-contenteditable`" }
+              ] }
+            ]
+          }
+        ]
+      },
+      {
+        "content": "How upcoming features can be implemented",
+        "collapsed": true,
+        "child_notes": [
+          {
+            "content": "Zooming in on a specific note",
+            "child_notes": [ { "content": "We should be able to open any bullet point on its own. Changes will be in the frontend, minimal changes in the server. The server already has the support for returning child_tree for any note." } ]
+          },
+          {
+            "content": "Undoing & Redoing capabilities",
+            "child_notes": [ { "content": "Can be handled entirely on the frontend. Can store user's actions in react state and use it to undo & redo changes. The existing logic for diffing and creating transactions will not change." } ]
+          },
+          {
+            "content": "Tagging",
+            "child_notes": [ { "content": "The current architecure can be extended to add a new field and make changes to the frontend to show tags for a note and show all notes for a tag. (Not sure if the list of notes for a tag should be fetched from local state or from an server API)" } ]
+          },
+          {
+            "content": "Searching",
+            "child_notes": [
+              { "content": "Can create an API on the server that can do fuzzy search on all the content in the notes." },
+              { "content": "Can use a full-text search engine like ElasticSearch to index the content. (MogoDB's text-search may work as well, need to research)" },
+              { "content": "The frontend app needs to come up with a way to show the search result from the existing state." }
+            ]
+          },
+          {
+            "content": "Drag and drop notes",
+            "child_notes": [ { "content": "Can use some library to handle drag and drop UX, and the handler will change the react state for notes. No other changes are expected." } ]
+          },
+          {
+            "content": "Paste outline notes copied from somewhere else and preserve the structure",
+            "child_notes": [ { "content": "Can attach an `onPaste` handler which will parse the pasted data, and understand the structure of the data and modify the react state." } ]
+          },
+          {
+            "content": "Select and copy multiple notes with its structure",
+            "child_notes": [ { "content": "Add handlers to select multiple notes, and a way to generate structured outline data from it" } ]
+          },
+          { "content": "Warn user when she's closing tab before all changes are synced" },
+          { "content": "`Expand All` & `Collapse All` buttons" },
+          {
+            "content": "Offline support",
+            "child_notes": [
+              { "content": "Can make it Progressive Web App." },
+              { "content": "Need to store the state locally. `IndexedDB` can be a good option to store it." }
+            ]
+          },
+          {
+            "content": "Real-time synchronization between multiple instances of clients",
+            "child_notes": [
+              { "content": "Can use Websockets to make it work." },
+              { "content": "The current transactions pattern should make it easy to sync the data reliably." }
+            ]
+          },
+          { "content": "Adding other authentication methods using OAuth2" },
+          { "content": "Optimizing for large amounts of data" },
+          {
+            "content": "Making certain page public",
+            "child_notes": [ { "content": "Easy to implement. Can add caching for these notes as well." } ]
+          },
+          {
+            "content": "Better support for mobile phone",
+            "child_notes": [ { "content": "Can add extra buttons that'll stick at the bottom for indending the notes left & right" } ]
+          }
+        ]
+      },
+      {
+        "content": "Why didn't I use Redux, GraphQL, or some other tech that could've suited better?",
+        "collapsed": true,
+        "child_notes": [
+          { "content": "While Redux/GraphQL would have been a great choices for the project, due to lock of time, my experience with both was limited, and using them would've meant spending more time learning these instead of implementing the features of the app." },
+          { "content": "Hence I avoided using any tech that I was not already proficient in to minimize the time spent in learning it / fixing bugs." }
+        ]
+      },
+      {
+        "content": "Automated Testing Approach",
+        "collapsed": true,
+        "child_notes": [
+          { "content": "Using `react-testing-library` with `jest` for unit and integration tests." },
+          { "content": "Most of the code for the core features is covered by integrated tests." },
+          { "content": "Didn't do a lot of unit tests due to a lack of time, but if this project was to be used by real users, I would add some essential unit tests before making it live." },
+          { "content": "Also skipped tests for some frontend code for non-core features (Login/Regsiter pages) because of the same reason." }
+        ]
+      }
+    ]
   }
 ]
