@@ -73,7 +73,7 @@ interface Props {
 }
 
 const sanitizeConf = {
-  allowedTags: ["b", "i", "em", "strong", "a", "p", "h1"],
+  allowedTags: ["b", "i", "em", "strong", "a", "p", "h1", "u"],
   allowedAttributes: { a: ["href"] }
 };
 
