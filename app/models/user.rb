@@ -16,7 +16,7 @@ class User
   validates :email, presence: true
   index({ email: 1 }, { unique: true, name: 'email_index' })
 
-  after_commit :add_initial_notes
+  after_create :add_initial_notes
 
   def id
     _id.to_s
