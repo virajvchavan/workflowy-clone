@@ -1,0 +1,21 @@
+[
+  {
+    "content": "Features (Learn how to use the app)",
+    "collapsed": false,
+    "child_notes": [
+      { "content": "Create an infinitely nested list of bullet points", "collapsed": false },
+      { "content": "Changes are synced with the server in almost real-time.", "collapsed": false },
+      { "content": "Collapse/expand any note with child notes", "collapsed": false },
+      { "content": "Keyboard Shortcuts", "collapsed": true, "child_notes": [
+        { "content": "<b>Enter</b> -> Adds a new note below the currently focused note.", "collapsed": false },
+        { "content": "<b>Tab</b> -> Indents a note towards right.", "collapsed": false },
+        { "content": "<b>Shift</b> + <b>Tab</b> -> Indents a note towards left.", "collapsed": false },
+        { "content": "<b>Backspace</b> when empty -> Deletes a note. If it has any chlid_notes, they're added to the parent of the deleted note.", "collapsed": false },
+        { "content": "<b>UpArrow</b> + <b>DownArrow</b> -> Navigate up and down using the arrow keys.", "collapsed": false },
+        { "content": "<b>Ctrl</b> + <b>B</b> -> Make the text <b>bold</b>", "collapsed": false },
+        { "content": "<b>Ctrl</b> + <b>I</b> -> Make the text <i>italicized</i>.", "collapsed": false },
+        { "content": "<b>Ctrl</b> + <b>U</b> -> Make the text <u>underlined</u>.", "collapsed": false }
+      ] }
+    ]
+  }
+]
